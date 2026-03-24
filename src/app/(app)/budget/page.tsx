@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Filter } from 'lucide-react'
+import { Plus, Trash2, Filter, Lightbulb, Loader2 } from 'lucide-react'
 import { useTripStore } from '@/store/tripStore'
 import { HealthRing } from '@/components/HealthRing'
 import { CategoryBadge, CATEGORY_META } from '@/components/CategoryBadge'
@@ -17,6 +17,9 @@ export default function BudgetPage() {
   const { activeTrip, activeTripExpenses, totalSpent, removeExpense } = useTripStore()
   const [sheetOpen, setSheetOpen] = useState(false)
   const [filterCat, setFilterCat] = useState<ExpenseCategory | 'all'>('all')
+  const [rescueTips, setRescueTips] = useState<string[]>([])
+  const [rescueLoading, setRescueLoading] = useState(false)
+  const [rescueOpen, setRescueOpen] = useState(false)
 
   const trip = activeTrip()
   const allExpenses = activeTripExpenses()
@@ -32,6 +35,25 @@ export default function BudgetPage() {
   }
 
   const health = calcHealthScore(trip, allExpenses, [])
+
+  async function fetchRescueTips() {
+    if (rescueTips.length > 0) { setRescueOpen(p => !p); return }
+    setRescueLoading(true); setRescueOpen(true)
+    const topCategories = ALL_CATEGORIES
+      .map(cat => ({ category: cat, total: allExpenses.filter(e => e.category === cat).reduce((s, e) => s + e.amountEur, 0) }))
+      .filter(c => c.total > 0).sort((a, b) => b.total - a.total).slice(0, 3)
+    const activeStop = trip?.stops.find(s => s.isActive) ?? trip?.stops[0]
+    try {
+      const res = await fetch('/api/budget-rescue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ totalBudget: trip?.totalBudget ?? 0, spent, daysRemaining: trip?.durationWeeks ? trip.durationWeeks * 7 : 30, topCategories, currentCity: activeStop?.city ?? 'current city', travelerType: 'backpacker' }),
+      })
+      const data = await res.json()
+      setRescueTips(data.tips ?? [])
+    } catch { setRescueTips(['Track every expense to stay on budget.']) }
+    setRescueLoading(false)
+  }
   const status = budgetStatus(trip.totalBudget > 0 ? Math.round((spent / trip.totalBudget) * 100) : 0)
   const remaining = trip.totalBudget - spent
   const pct = trip.totalBudget > 0 ? Math.min(100, (spent / trip.totalBudget) * 100) : 0
@@ -77,6 +99,29 @@ export default function BudgetPage() {
         </div>
         <p className="text-white/70 text-xs mt-2 text-right">{pct.toFixed(0)}% of {formatEur(trip.totalBudget)}</p>
       </div>
+
+      {/* Budget rescue */}
+      <button onClick={fetchRescueTips}
+        className="w-full flex items-center gap-3 card p-3.5 hover:shadow-card-hover transition-shadow active:scale-[0.99]">
+        <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950 flex items-center justify-center shrink-0">
+          {rescueLoading ? <Loader2 size={16} className="text-amber-500 animate-spin" /> : <Lightbulb size={16} className="text-amber-500" />}
+        </div>
+        <p className="text-sm font-semibold text-gray-900 dark:text-white flex-1 text-left">Budget rescue tips</p>
+        <span className="text-xs text-gray-400">{rescueOpen ? '↑' : '↓'}</span>
+      </button>
+      <AnimatePresence>
+        {rescueOpen && rescueTips.length > 0 && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            className="card p-4 space-y-2.5 overflow-hidden">
+            {rescueTips.map((tip, i) => (
+              <div key={i} className="flex gap-2.5">
+                <span className="text-amber-400 shrink-0 mt-0.5">💡</span>
+                <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed">{tip}</p>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {byCategory.length > 0 && (
         <div className="card p-4">

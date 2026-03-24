@@ -2,14 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Map, Wallet, FileText } from 'lucide-react'
+import { Home, Map, Wallet, FileText, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { HydrationGuard } from '@/components/HydrationGuard'
 
 const NAV = [
-  { href: '/home',   label: 'Home',   Icon: Home     },
-  { href: '/trip',   label: 'Trip',   Icon: Map      },
-  { href: '/budget', label: 'Budget', Icon: Wallet   },
-  { href: '/docs',   label: 'Docs',   Icon: FileText },
+  { href: '/home',     label: 'Home',    Icon: Home     },
+  { href: '/trip',     label: 'Trip',    Icon: Map      },
+  { href: '/budget',   label: 'Budget',  Icon: Wallet   },
+  { href: '/docs',     label: 'Docs',    Icon: FileText },
+  { href: '/settings', label: 'More',    Icon: Settings },
 ]
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -19,7 +21,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh flex flex-col max-w-md mx-auto relative">
       {/* Page content */}
       <main className="flex-1 page-content overflow-y-auto">
-        {children}
+        <HydrationGuard>
+          {children}
+        </HydrationGuard>
       </main>
 
       {/* Bottom Navigation — Stitch glassmorphic style */}
