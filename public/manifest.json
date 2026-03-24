@@ -1,0 +1,34 @@
+{
+  "name": "TripDripGoGo",
+  "short_name": "TripDrip",
+  "description": "Solo Travel OS — budget-first, AI-powered, offline-capable.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#059467",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-home.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "categories": ["travel", "finance", "lifestyle"],
+  "lang": "en"
+}

@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Google Fonts ─────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,wght@1,400;1,600;1,700&display=swap');
+
+/* ── CSS Custom Properties ────────────────────────────────────────────── */
+:root {
+  --primary:         #059467;
+  --primary-10:      rgb(5 148 103 / 0.1);
+  --primary-20:      rgb(5 148 103 / 0.2);
+  --primary-40:      rgb(5 148 103 / 0.4);
+  --surface:         #f9fafb;
+  --surface-dark:    #0f172a;
+  --card:            #ffffff;
+  --border:          #e5e7eb;
+  --text:            #111827;
+  --text-muted:      #6b7280;
+  --alert-danger:    #dc2626;
+  --alert-warning:   #d97706;
+  --bottom-nav-h:    64px;
+}
+
+.dark {
+  --surface:      #0f172a;
+  --card:         #1e293b;
+  --border:       #334155;
+  --text:         #f8fafc;
+  --text-muted:   #94a3b8;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────── */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--surface);
+  color: var(--text);
+  min-height: 100dvh;
+}
+
+/* ── Utility Classes ─────────────────────────────────────────────────── */
+@layer utilities {
+  /* Layout */
+  .safe-bottom { padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Typography */
+  .font-display { font-family: 'Newsreader', Georgia, serif; font-style: italic; }
+  .text-balance  { text-wrap: balance; }
+
+  /* Gradients */
+  .gradient-hero   { background-image: var(--gradient-hero,   linear-gradient(135deg, #059467 0%, #10b981 50%, #34d399 100%)); }
+  .gradient-budget { background-image: var(--gradient-budget, linear-gradient(90deg,  #059467 0%, #10b981 100%)); }
+  .gradient-card   { background-image: linear-gradient(180deg, transparent 0%, rgb(15 23 42 / 0.8) 100%); }
+
+  /* Glassmorphic */
+  .glass { backdrop-filter: blur(12px); background-color: rgb(255 255 255 / 0.85); }
+  .dark .glass { background-color: rgb(15 23 42 / 0.85); }
+
+  /* Timeline dots (Stitch pattern) */
+  .timeline-dot-primary  { background-color: var(--primary); }
+  .timeline-dot-mid      { background-color: var(--primary-40); }
+  .timeline-dot-faint    { background-color: var(--primary-20); }
+}
+
+/* ── Component Defaults ──────────────────────────────────────────────── */
+@layer components {
+  /* Card */
+  .card {
+    @apply bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-card;
+  }
+
+  /* Button primary */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-full
+           shadow-sm hover:bg-primary-700 active:scale-95 transition-all duration-150;
+  }
+
+  /* Button secondary */
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-primary-50 dark:bg-primary-950 text-primary-600
+           font-semibold rounded-full border border-primary-200 dark:border-primary-800
+           hover:bg-primary-100 active:scale-95 transition-all duration-150;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-600
+           bg-white dark:bg-slate-800 text-gray-900 dark:text-white
+           focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600
+           placeholder:text-gray-400 transition;
+  }
+
+  /* Bottom navigation height spacer */
+  .page-content { @apply pb-[calc(64px+env(safe-area-inset-bottom,0px))]; }
+}
