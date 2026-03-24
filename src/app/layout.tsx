@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter, Newsreader } from 'next/font/google'
 import './globals.css'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
+const newsreader = Newsreader({ subsets: ['latin'], style: ['italic'], weight: ['400', '600', '700'], variable: '--font-newsreader', display: 'swap', adjustFontFallback: false })
 
 export const metadata: Metadata = {
   title: 'TripDripGoGo — Your Solo Travel OS',
@@ -26,15 +30,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,wght@1,400;1,600;1,700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${newsreader.variable}`}>
       <body className="font-sans antialiased bg-surface dark:bg-surface-dark text-gray-900 dark:text-white">
         {children}
       </body>
