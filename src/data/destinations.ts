@@ -1,79 +1,240 @@
-// Popular destinations per region with realistic budget benchmarks (€/day incl. accommodation)
-
 export interface Destination {
   city: string
   country: string
   countryCode: string
   region: string
   budgetPerDay: { backpacker: number; budget: number; comfort: number; flashpacker: number }
-  character: string[]  // chill | party | culture | nature | city | beach | mountains
+  character: string[]
   emoji: string
 }
 
 export const DESTINATIONS: Destination[] = [
   // ── Southeast Asia ──────────────────────────────────────────────────────────
-  { city: 'Bangkok',       country: 'Thailand',     countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 60, flashpacker: 85 },  character: ['city', 'culture', 'food'],    emoji: '🏙️' },
-  { city: 'Chiang Mai',    country: 'Thailand',     countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50, flashpacker: 70 },  character: ['culture', 'nature', 'chill'], emoji: '🌿' },
-  { city: 'Phuket',        country: 'Thailand',     countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 30, budget: 45, comfort: 80, flashpacker: 120 }, character: ['beach', 'party', 'chill'],   emoji: '🏖️' },
-  { city: 'Koh Phangan',   country: 'Thailand',     countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 65, flashpacker: 95 },  character: ['beach', 'party', 'chill'],   emoji: '🌴' },
-  { city: 'Hanoi',         country: 'Vietnam',      countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 45, flashpacker: 65 },  character: ['culture', 'city', 'food'],   emoji: '🏛️' },
-  { city: 'Ho Chi Minh',   country: 'Vietnam',      countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50, flashpacker: 75 },  character: ['city', 'food', 'culture'],   emoji: '🌆' },
-  { city: 'Hoi An',        country: 'Vietnam',      countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 32, comfort: 52, flashpacker: 72 },  character: ['culture', 'chill', 'beach'], emoji: '🏮' },
-  { city: 'Da Nang',       country: 'Vietnam',      countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50, flashpacker: 70 },  character: ['beach', 'city', 'culture'],  emoji: '🌊' },
-  { city: 'Siem Reap',     country: 'Cambodia',     countryCode: 'KH', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 48, flashpacker: 70 },  character: ['culture', 'nature'],          emoji: '🏯' },
-  { city: 'Phnom Penh',    country: 'Cambodia',     countryCode: 'KH', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 45, flashpacker: 65 },  character: ['culture', 'city'],            emoji: '🌁' },
-  { city: 'Bali',          country: 'Indonesia',    countryCode: 'ID', region: 'SEA', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70, flashpacker: 110 }, character: ['beach', 'culture', 'chill'], emoji: '🌺' },
-  { city: 'Lombok',        country: 'Indonesia',    countryCode: 'ID', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55, flashpacker: 80 },  character: ['beach', 'nature', 'chill'],  emoji: '🏄' },
-  { city: 'Yogyakarta',    country: 'Indonesia',    countryCode: 'ID', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 27, comfort: 45, flashpacker: 65 },  character: ['culture', 'nature'],          emoji: '🏔️' },
-  { city: 'Kuala Lumpur',  country: 'Malaysia',     countryCode: 'MY', region: 'SEA', budgetPerDay: { backpacker: 28, budget: 40, comfort: 65, flashpacker: 95 },  character: ['city', 'food', 'culture'],   emoji: '🌃' },
-  { city: 'Penang',        country: 'Malaysia',     countryCode: 'MY', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55, flashpacker: 75 },  character: ['food', 'culture', 'city'],   emoji: '🍜' },
-  { city: 'Singapore',     country: 'Singapore',    countryCode: 'SG', region: 'SEA', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 200 },character: ['city', 'food', 'culture'],   emoji: '🦁' },
-  { city: 'Manila',        country: 'Philippines',  countryCode: 'PH', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55, flashpacker: 80 },  character: ['city', 'culture'],            emoji: '🌴' },
-  { city: 'Vang Vieng',    country: 'Laos',         countryCode: 'LA', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 45, flashpacker: 65 },  character: ['party', 'nature', 'chill'],  emoji: '🛶' },
-  { city: 'Luang Prabang', country: 'Laos',         countryCode: 'LA', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 32, comfort: 52, flashpacker: 75 },  character: ['culture', 'chill', 'nature'],emoji: '🕌' },
+  { city: 'Bangkok',        country: 'Thailand',      countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 60,  flashpacker: 85  }, character: ['city','culture','food'],          emoji: '🏙️' },
+  { city: 'Chiang Mai',     country: 'Thailand',      countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50,  flashpacker: 70  }, character: ['culture','nature','chill'],       emoji: '🌿' },
+  { city: 'Chiang Rai',     country: 'Thailand',      countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 45,  flashpacker: 65  }, character: ['culture','nature'],               emoji: '🏔️' },
+  { city: 'Phuket',         country: 'Thailand',      countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 30, budget: 45, comfort: 80,  flashpacker: 120 }, character: ['beach','party','chill'],          emoji: '🏖️' },
+  { city: 'Koh Phangan',    country: 'Thailand',      countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 65,  flashpacker: 95  }, character: ['beach','party','chill'],          emoji: '🌴' },
+  { city: 'Koh Samui',      country: 'Thailand',      countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 30, budget: 45, comfort: 80,  flashpacker: 120 }, character: ['beach','chill'],                  emoji: '🌊' },
+  { city: 'Pai',            country: 'Thailand',      countryCode: 'TH', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 27, comfort: 42,  flashpacker: 62  }, character: ['nature','chill'],                 emoji: '🏕️' },
+  { city: 'Hanoi',          country: 'Vietnam',       countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 45,  flashpacker: 65  }, character: ['culture','city','food'],          emoji: '🏛️' },
+  { city: 'Ho Chi Minh',    country: 'Vietnam',       countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50,  flashpacker: 75  }, character: ['city','food','culture'],          emoji: '🌆' },
+  { city: 'Hoi An',         country: 'Vietnam',       countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 32, comfort: 52,  flashpacker: 72  }, character: ['culture','chill','beach'],        emoji: '🏮' },
+  { city: 'Da Nang',        country: 'Vietnam',       countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50,  flashpacker: 70  }, character: ['beach','city','culture'],         emoji: '🌊' },
+  { city: 'Nha Trang',      country: 'Vietnam',       countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 52,  flashpacker: 72  }, character: ['beach','party'],                  emoji: '🏄' },
+  { city: 'Sapa',           country: 'Vietnam',       countryCode: 'VN', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 45,  flashpacker: 65  }, character: ['mountains','culture','nature'],   emoji: '🏔️' },
+  { city: 'Siem Reap',      country: 'Cambodia',      countryCode: 'KH', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 48,  flashpacker: 70  }, character: ['culture','nature'],               emoji: '🏯' },
+  { city: 'Phnom Penh',     country: 'Cambodia',      countryCode: 'KH', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 45,  flashpacker: 65  }, character: ['culture','city'],                 emoji: '🌁' },
+  { city: 'Bali',           country: 'Indonesia',     countryCode: 'ID', region: 'SEA', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 110 }, character: ['beach','culture','chill'],        emoji: '🌺' },
+  { city: 'Lombok',         country: 'Indonesia',     countryCode: 'ID', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 80  }, character: ['beach','nature','chill'],         emoji: '🏄' },
+  { city: 'Yogyakarta',     country: 'Indonesia',     countryCode: 'ID', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 27, comfort: 45,  flashpacker: 65  }, character: ['culture','nature'],               emoji: '🏔️' },
+  { city: 'Jakarta',        country: 'Indonesia',     countryCode: 'ID', region: 'SEA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 65,  flashpacker: 95  }, character: ['city','food'],                    emoji: '🌆' },
+  { city: 'Flores',         country: 'Indonesia',     countryCode: 'ID', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 80  }, character: ['nature','beach'],                 emoji: '🐉' },
+  { city: 'Kuala Lumpur',   country: 'Malaysia',      countryCode: 'MY', region: 'SEA', budgetPerDay: { backpacker: 28, budget: 40, comfort: 65,  flashpacker: 95  }, character: ['city','food','culture'],          emoji: '🌃' },
+  { city: 'Penang',         country: 'Malaysia',      countryCode: 'MY', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 75  }, character: ['food','culture','city'],          emoji: '🍜' },
+  { city: 'Langkawi',       country: 'Malaysia',      countryCode: 'MY', region: 'SEA', budgetPerDay: { backpacker: 28, budget: 40, comfort: 68,  flashpacker: 100 }, character: ['beach','nature','chill'],         emoji: '🏝️' },
+  { city: 'Singapore',      country: 'Singapore',     countryCode: 'SG', region: 'SEA', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 200 }, character: ['city','food','culture'],          emoji: '🦁' },
+  { city: 'Manila',         country: 'Philippines',   countryCode: 'PH', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 80  }, character: ['city','culture'],                 emoji: '🌴' },
+  { city: 'Palawan',        country: 'Philippines',   countryCode: 'PH', region: 'SEA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 65,  flashpacker: 95  }, character: ['beach','nature','chill'],         emoji: '🏝️' },
+  { city: 'Cebu',           country: 'Philippines',   countryCode: 'PH', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 80  }, character: ['beach','city'],                   emoji: '🐠' },
+  { city: 'Vang Vieng',     country: 'Laos',          countryCode: 'LA', region: 'SEA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 45,  flashpacker: 65  }, character: ['party','nature','chill'],         emoji: '🛶' },
+  { city: 'Luang Prabang',  country: 'Laos',          countryCode: 'LA', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 32, comfort: 52,  flashpacker: 75  }, character: ['culture','chill','nature'],       emoji: '🕌' },
+  { city: 'Yangon',         country: 'Myanmar',       countryCode: 'MM', region: 'SEA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50,  flashpacker: 72  }, character: ['culture','city'],                 emoji: '🏛️' },
+  { city: 'Bagan',          country: 'Myanmar',       countryCode: 'MM', region: 'SEA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 52,  flashpacker: 75  }, character: ['culture','nature'],               emoji: '🏯' },
 
-  // ── Europe ───────────────────────────────────────────────────────────────────
-  { city: 'Lisbon',        country: 'Portugal',     countryCode: 'PT', region: 'EUROPE', budgetPerDay: { backpacker: 45, budget: 65, comfort: 100, flashpacker: 150 }, character: ['city', 'culture', 'beach'],  emoji: '🏰' },
-  { city: 'Porto',         country: 'Portugal',     countryCode: 'PT', region: 'EUROPE', budgetPerDay: { backpacker: 40, budget: 58, comfort: 90, flashpacker: 130 },  character: ['city', 'culture', 'chill'],  emoji: '🍷' },
-  { city: 'Barcelona',     country: 'Spain',        countryCode: 'ES', region: 'EUROPE', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 200 }, character: ['city', 'beach', 'party'],    emoji: '🎨' },
-  { city: 'Madrid',        country: 'Spain',        countryCode: 'ES', region: 'EUROPE', budgetPerDay: { backpacker: 50, budget: 75, comfort: 120, flashpacker: 180 }, character: ['city', 'culture', 'food'],   emoji: '💃' },
-  { city: 'Amsterdam',     country: 'Netherlands',  countryCode: 'NL', region: 'EUROPE', budgetPerDay: { backpacker: 70, budget: 100, comfort: 160, flashpacker: 240 },character: ['city', 'culture', 'party'],  emoji: '🚲' },
-  { city: 'Berlin',        country: 'Germany',      countryCode: 'DE', region: 'EUROPE', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 190 }, character: ['city', 'party', 'culture'],  emoji: '🎵' },
-  { city: 'Prague',        country: 'Czech Republic',countryCode:'CZ', region: 'EUROPE', budgetPerDay: { backpacker: 40, budget: 58, comfort: 95, flashpacker: 140 },  character: ['city', 'culture', 'party'],  emoji: '🏯' },
-  { city: 'Budapest',      country: 'Hungary',      countryCode: 'HU', region: 'EUROPE', budgetPerDay: { backpacker: 38, budget: 55, comfort: 90, flashpacker: 135 },  character: ['city', 'culture', 'chill'],  emoji: '♨️' },
-  { city: 'Kraków',        country: 'Poland',       countryCode: 'PL', region: 'EUROPE', budgetPerDay: { backpacker: 35, budget: 50, comfort: 80, flashpacker: 120 },  character: ['city', 'culture'],            emoji: '🏰' },
-  { city: 'Athens',        country: 'Greece',       countryCode: 'GR', region: 'EUROPE', budgetPerDay: { backpacker: 45, budget: 65, comfort: 105, flashpacker: 155 }, character: ['city', 'culture', 'beach'],  emoji: '🏛️' },
-  { city: 'Tbilisi',       country: 'Georgia',      countryCode: 'GE', region: 'EUROPE', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70, flashpacker: 105 },  character: ['city', 'culture', 'food'],   emoji: '🍷' },
-
-  // ── Latin America ─────────────────────────────────────────────────────────────
-  { city: 'Medellín',      country: 'Colombia',     countryCode: 'CO', region: 'LATAM', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70, flashpacker: 105 },  character: ['city', 'culture', 'party'],  emoji: '🌸' },
-  { city: 'Cartagena',     country: 'Colombia',     countryCode: 'CO', region: 'LATAM', budgetPerDay: { backpacker: 32, budget: 48, comfort: 78, flashpacker: 115 },  character: ['beach', 'culture', 'city'],  emoji: '🏖️' },
-  { city: 'Mexico City',   country: 'Mexico',       countryCode: 'MX', region: 'LATAM', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75, flashpacker: 110 },  character: ['city', 'culture', 'food'],   emoji: '🌮' },
-  { city: 'Buenos Aires',  country: 'Argentina',    countryCode: 'AR', region: 'LATAM', budgetPerDay: { backpacker: 25, budget: 38, comfort: 65, flashpacker: 98 },   character: ['city', 'culture', 'food'],   emoji: '🥩' },
-  { city: 'Lima',          country: 'Peru',         countryCode: 'PE', region: 'LATAM', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70, flashpacker: 105 },  character: ['city', 'food', 'culture'],   emoji: '🍽️' },
-  { city: 'Cusco',         country: 'Peru',         countryCode: 'PE', region: 'LATAM', budgetPerDay: { backpacker: 25, budget: 38, comfort: 62, flashpacker: 92 },   character: ['culture', 'mountains', 'nature'], emoji: '🏔️' },
+  // ── East Asia ─────────────────────────────────────────────────────────────────
+  { city: 'Tokyo',          country: 'Japan',         countryCode: 'JP', region: 'EAST_ASIA', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 200 }, character: ['city','culture','food'],     emoji: '🗼' },
+  { city: 'Osaka',          country: 'Japan',         countryCode: 'JP', region: 'EAST_ASIA', budgetPerDay: { backpacker: 50, budget: 72, comfort: 118, flashpacker: 175 }, character: ['city','food','culture'],     emoji: '🍣' },
+  { city: 'Kyoto',          country: 'Japan',         countryCode: 'JP', region: 'EAST_ASIA', budgetPerDay: { backpacker: 52, budget: 75, comfort: 122, flashpacker: 180 }, character: ['culture','nature'],          emoji: '⛩️' },
+  { city: 'Hiroshima',      country: 'Japan',         countryCode: 'JP', region: 'EAST_ASIA', budgetPerDay: { backpacker: 48, budget: 70, comfort: 112, flashpacker: 165 }, character: ['culture','city'],            emoji: '🕊️' },
+  { city: 'Seoul',          country: 'South Korea',   countryCode: 'KR', region: 'EAST_ASIA', budgetPerDay: { backpacker: 45, budget: 65, comfort: 105, flashpacker: 160 }, character: ['city','culture','food'],     emoji: '🏙️' },
+  { city: 'Busan',          country: 'South Korea',   countryCode: 'KR', region: 'EAST_ASIA', budgetPerDay: { backpacker: 40, budget: 58, comfort: 95,  flashpacker: 140 }, character: ['beach','city','food'],       emoji: '🎣' },
+  { city: 'Beijing',        country: 'China',         countryCode: 'CN', region: 'EAST_ASIA', budgetPerDay: { backpacker: 35, budget: 52, comfort: 88,  flashpacker: 130 }, character: ['culture','city'],            emoji: '🏯' },
+  { city: 'Shanghai',       country: 'China',         countryCode: 'CN', region: 'EAST_ASIA', budgetPerDay: { backpacker: 38, budget: 58, comfort: 98,  flashpacker: 148 }, character: ['city','food'],               emoji: '🌆' },
+  { city: 'Hong Kong',      country: 'Hong Kong',     countryCode: 'HK', region: 'EAST_ASIA', budgetPerDay: { backpacker: 60, budget: 90, comfort: 150, flashpacker: 220 }, character: ['city','food'],               emoji: '🌉' },
+  { city: 'Taipei',         country: 'Taiwan',        countryCode: 'TW', region: 'EAST_ASIA', budgetPerDay: { backpacker: 40, budget: 58, comfort: 95,  flashpacker: 140 }, character: ['city','food','culture'],     emoji: '🫧' },
+  { city: 'Ulaanbaatar',    country: 'Mongolia',      countryCode: 'MN', region: 'EAST_ASIA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 62,  flashpacker: 92  }, character: ['nature','culture'],          emoji: '🏕️' },
 
   // ── South Asia ─────────────────────────────────────────────────────────────────
-  { city: 'Kathmandu',     country: 'Nepal',        countryCode: 'NP', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 48, flashpacker: 72 },  character: ['culture', 'mountains', 'nature'], emoji: '🏔️' },
-  { city: 'Goa',           country: 'India',        countryCode: 'IN', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50, flashpacker: 75 },  character: ['beach', 'party', 'chill'],        emoji: '🏖️' },
-  { city: 'Mumbai',        country: 'India',        countryCode: 'IN', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55, flashpacker: 82 },  character: ['city', 'culture', 'food'],        emoji: '🌆' },
-  { city: 'Colombo',       country: 'Sri Lanka',    countryCode: 'LK', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55, flashpacker: 80 },  character: ['city', 'culture'],                emoji: '🦁' },
+  { city: 'Kathmandu',      country: 'Nepal',         countryCode: 'NP', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 48, flashpacker: 72  }, character: ['culture','mountains','nature'], emoji: '🏔️' },
+  { city: 'Pokhara',        country: 'Nepal',         countryCode: 'NP', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 18, budget: 27, comfort: 45, flashpacker: 68  }, character: ['mountains','nature','chill'],   emoji: '🏔️' },
+  { city: 'Delhi',          country: 'India',         countryCode: 'IN', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 18, budget: 28, comfort: 48, flashpacker: 72  }, character: ['culture','city','food'],        emoji: '🕌' },
+  { city: 'Mumbai',         country: 'India',         countryCode: 'IN', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55, flashpacker: 82  }, character: ['city','culture','food'],        emoji: '🌆' },
+  { city: 'Goa',            country: 'India',         countryCode: 'IN', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50, flashpacker: 75  }, character: ['beach','party','chill'],        emoji: '🏖️' },
+  { city: 'Jaipur',         country: 'India',         countryCode: 'IN', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 18, budget: 27, comfort: 45, flashpacker: 68  }, character: ['culture','city'],               emoji: '🏰' },
+  { city: 'Varanasi',       country: 'India',         countryCode: 'IN', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 15, budget: 23, comfort: 40, flashpacker: 62  }, character: ['culture','city'],               emoji: '🕍' },
+  { city: 'Rishikesh',      country: 'India',         countryCode: 'IN', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 15, budget: 23, comfort: 40, flashpacker: 62  }, character: ['nature','chill','mountains'],   emoji: '🧘' },
+  { city: 'Colombo',        country: 'Sri Lanka',     countryCode: 'LK', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55, flashpacker: 80  }, character: ['city','culture'],               emoji: '🦁' },
+  { city: 'Ella',           country: 'Sri Lanka',     countryCode: 'LK', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50, flashpacker: 75  }, character: ['nature','chill','mountains'],   emoji: '🌿' },
+  { city: 'Dhaka',          country: 'Bangladesh',    countryCode: 'BD', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 15, budget: 22, comfort: 38, flashpacker: 58  }, character: ['city','culture'],               emoji: '🏙️' },
+  { city: 'Islamabad',      country: 'Pakistan',      countryCode: 'PK', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 18, budget: 27, comfort: 45, flashpacker: 68  }, character: ['city','culture'],               emoji: '🕌' },
+  { city: 'Lahore',         country: 'Pakistan',      countryCode: 'PK', region: 'SOUTH_ASIA', budgetPerDay: { backpacker: 18, budget: 27, comfort: 45, flashpacker: 68  }, character: ['city','culture','food'],        emoji: '🏯' },
 
-  // ── East Asia ──────────────────────────────────────────────────────────────────
-  { city: 'Tokyo',         country: 'Japan',        countryCode: 'JP', region: 'EAST_ASIA', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 200 }, character: ['city', 'culture', 'food'],   emoji: '🗼' },
-  { city: 'Osaka',         country: 'Japan',        countryCode: 'JP', region: 'EAST_ASIA', budgetPerDay: { backpacker: 48, budget: 70, comfort: 115, flashpacker: 170 }, character: ['city', 'food', 'culture'],   emoji: '🦌' },
-  { city: 'Kyoto',         country: 'Japan',        countryCode: 'JP', region: 'EAST_ASIA', budgetPerDay: { backpacker: 50, budget: 72, comfort: 118, flashpacker: 175 }, character: ['culture', 'nature', 'city'], emoji: '⛩️' },
-  { city: 'Seoul',         country: 'South Korea',  countryCode: 'KR', region: 'EAST_ASIA', budgetPerDay: { backpacker: 45, budget: 65, comfort: 108, flashpacker: 160 }, character: ['city', 'food', 'culture'],   emoji: '🏙️' },
-  { city: 'Taipei',        country: 'Taiwan',       countryCode: 'TW', region: 'EAST_ASIA', budgetPerDay: { backpacker: 40, budget: 58, comfort: 95, flashpacker: 142 },  character: ['city', 'food', 'culture'],   emoji: '🧋' },
+  // ── Central Asia ─────────────────────────────────────────────────────────────
+  { city: 'Samarkand',      country: 'Uzbekistan',    countryCode: 'UZ', region: 'CENTRAL_ASIA', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50, flashpacker: 75 }, character: ['culture','city'],    emoji: '🕌' },
+  { city: 'Tashkent',       country: 'Uzbekistan',    countryCode: 'UZ', region: 'CENTRAL_ASIA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55, flashpacker: 80 }, character: ['city','culture'],    emoji: '🏛️' },
+  { city: 'Almaty',         country: 'Kazakhstan',    countryCode: 'KZ', region: 'CENTRAL_ASIA', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70, flashpacker: 105}, character: ['city','mountains'],  emoji: '🏔️' },
+  { city: 'Bishkek',        country: 'Kyrgyzstan',    countryCode: 'KG', region: 'CENTRAL_ASIA', budgetPerDay: { backpacker: 18, budget: 27, comfort: 45, flashpacker: 68 }, character: ['city','mountains'],  emoji: '🏕️' },
+  { city: 'Tbilisi',        country: 'Georgia',       countryCode: 'GE', region: 'CENTRAL_ASIA', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70, flashpacker: 105}, character: ['city','culture','food'], emoji: '🍷' },
+  { city: 'Yerevan',        country: 'Armenia',       countryCode: 'AM', region: 'CENTRAL_ASIA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 62, flashpacker: 92 }, character: ['city','culture'],    emoji: '🏛️' },
+  { city: 'Baku',           country: 'Azerbaijan',    countryCode: 'AZ', region: 'CENTRAL_ASIA', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75, flashpacker: 110}, character: ['city','culture'],    emoji: '🏙️' },
+
+  // ── Middle East ───────────────────────────────────────────────────────────────
+  { city: 'Istanbul',       country: 'Turkey',        countryCode: 'TR', region: 'MIDEAST', budgetPerDay: { backpacker: 35, budget: 52, comfort: 88,  flashpacker: 130 }, character: ['city','culture','food'],  emoji: '🕌' },
+  { city: 'Cappadocia',     country: 'Turkey',        countryCode: 'TR', region: 'MIDEAST', budgetPerDay: { backpacker: 38, budget: 55, comfort: 90,  flashpacker: 135 }, character: ['nature','culture'],       emoji: '🎈' },
+  { city: 'Antalya',        country: 'Turkey',        countryCode: 'TR', region: 'MIDEAST', budgetPerDay: { backpacker: 35, budget: 50, comfort: 82,  flashpacker: 120 }, character: ['beach','city'],            emoji: '🏖️' },
+  { city: 'Amman',          country: 'Jordan',        countryCode: 'JO', region: 'MIDEAST', budgetPerDay: { backpacker: 35, budget: 52, comfort: 85,  flashpacker: 125 }, character: ['city','culture'],         emoji: '🏛️' },
+  { city: 'Petra',          country: 'Jordan',        countryCode: 'JO', region: 'MIDEAST', budgetPerDay: { backpacker: 40, budget: 60, comfort: 95,  flashpacker: 140 }, character: ['culture','nature'],       emoji: '🏺' },
+  { city: 'Dubai',          country: 'UAE',           countryCode: 'AE', region: 'MIDEAST', budgetPerDay: { backpacker: 75, budget: 110, comfort: 180, flashpacker: 280}, character: ['city','beach'],            emoji: '🏙️' },
+  { city: 'Abu Dhabi',      country: 'UAE',           countryCode: 'AE', region: 'MIDEAST', budgetPerDay: { backpacker: 70, budget: 105, comfort: 170, flashpacker: 260}, character: ['city','culture'],         emoji: '🕌' },
+  { city: 'Tel Aviv',       country: 'Israel',        countryCode: 'IL', region: 'MIDEAST', budgetPerDay: { backpacker: 65, budget: 95, comfort: 155, flashpacker: 230 }, character: ['city','beach','culture'], emoji: '🌊' },
+  { city: 'Cairo',          country: 'Egypt',         countryCode: 'EG', region: 'MIDEAST', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 82  }, character: ['culture','city'],         emoji: '🛕' },
+  { city: 'Luxor',          country: 'Egypt',         countryCode: 'EG', region: 'MIDEAST', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50,  flashpacker: 75  }, character: ['culture'],                emoji: '🏛️' },
+  { city: 'Hurghada',       country: 'Egypt',         countryCode: 'EG', region: 'MIDEAST', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['beach','chill'],          emoji: '🏖️' },
+  { city: 'Marrakech',      country: 'Morocco',       countryCode: 'MA', region: 'MIDEAST', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['culture','food','city'],  emoji: '🏺' },
+  { city: 'Fes',            country: 'Morocco',       countryCode: 'MA', region: 'MIDEAST', budgetPerDay: { backpacker: 25, budget: 38, comfort: 62,  flashpacker: 92  }, character: ['culture','city'],         emoji: '🕌' },
+  { city: 'Chefchaouen',    country: 'Morocco',       countryCode: 'MA', region: 'MIDEAST', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 82  }, character: ['culture','chill'],        emoji: '💙' },
+
+  // ── Europe ────────────────────────────────────────────────────────────────────
+  { city: 'Lisbon',         country: 'Portugal',      countryCode: 'PT', region: 'EUROPE', budgetPerDay: { backpacker: 45, budget: 65, comfort: 100, flashpacker: 150 }, character: ['city','culture','beach'],  emoji: '🏰' },
+  { city: 'Porto',          country: 'Portugal',      countryCode: 'PT', region: 'EUROPE', budgetPerDay: { backpacker: 40, budget: 58, comfort: 90,  flashpacker: 130 }, character: ['city','culture','chill'],  emoji: '🍷' },
+  { city: 'Algarve',        country: 'Portugal',      countryCode: 'PT', region: 'EUROPE', budgetPerDay: { backpacker: 42, budget: 60, comfort: 95,  flashpacker: 140 }, character: ['beach','chill'],           emoji: '🏖️' },
+  { city: 'Barcelona',      country: 'Spain',         countryCode: 'ES', region: 'EUROPE', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 200 }, character: ['city','beach','party'],    emoji: '🎨' },
+  { city: 'Madrid',         country: 'Spain',         countryCode: 'ES', region: 'EUROPE', budgetPerDay: { backpacker: 50, budget: 75, comfort: 120, flashpacker: 180 }, character: ['city','culture','food'],   emoji: '💃' },
+  { city: 'Seville',        country: 'Spain',         countryCode: 'ES', region: 'EUROPE', budgetPerDay: { backpacker: 45, budget: 65, comfort: 105, flashpacker: 155 }, character: ['city','culture'],          emoji: '🌹' },
+  { city: 'Granada',        country: 'Spain',         countryCode: 'ES', region: 'EUROPE', budgetPerDay: { backpacker: 42, budget: 60, comfort: 98,  flashpacker: 145 }, character: ['culture','city'],          emoji: '🏰' },
+  { city: 'Ibiza',          country: 'Spain',         countryCode: 'ES', region: 'EUROPE', budgetPerDay: { backpacker: 60, budget: 90, comfort: 150, flashpacker: 230 }, character: ['beach','party'],           emoji: '🎉' },
+  { city: 'Paris',          country: 'France',        countryCode: 'FR', region: 'EUROPE', budgetPerDay: { backpacker: 70, budget: 100, comfort: 165, flashpacker: 250}, character: ['city','culture','food'],   emoji: '🗼' },
+  { city: 'Nice',           country: 'France',        countryCode: 'FR', region: 'EUROPE', budgetPerDay: { backpacker: 60, budget: 88, comfort: 142, flashpacker: 215}, character: ['beach','city'],             emoji: '🌊' },
+  { city: 'Marseille',      country: 'France',        countryCode: 'FR', region: 'EUROPE', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 195}, character: ['city','beach','culture'],  emoji: '⚓' },
+  { city: 'Amsterdam',      country: 'Netherlands',   countryCode: 'NL', region: 'EUROPE', budgetPerDay: { backpacker: 70, budget: 100, comfort: 160, flashpacker: 240}, character: ['city','culture','party'],  emoji: '🚲' },
+  { city: 'Berlin',         country: 'Germany',       countryCode: 'DE', region: 'EUROPE', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 190 }, character: ['city','party','culture'],  emoji: '🎵' },
+  { city: 'Munich',         country: 'Germany',       countryCode: 'DE', region: 'EUROPE', budgetPerDay: { backpacker: 60, budget: 88, comfort: 142, flashpacker: 215 }, character: ['city','culture'],          emoji: '🍺' },
+  { city: 'Hamburg',        country: 'Germany',       countryCode: 'DE', region: 'EUROPE', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 190 }, character: ['city','culture'],          emoji: '⚓' },
+  { city: 'Rome',           country: 'Italy',         countryCode: 'IT', region: 'EUROPE', budgetPerDay: { backpacker: 60, budget: 88, comfort: 142, flashpacker: 215 }, character: ['city','culture','food'],   emoji: '🏛️' },
+  { city: 'Florence',       country: 'Italy',         countryCode: 'IT', region: 'EUROPE', budgetPerDay: { backpacker: 58, budget: 84, comfort: 135, flashpacker: 205 }, character: ['city','culture','art'],    emoji: '🎨' },
+  { city: 'Venice',         country: 'Italy',         countryCode: 'IT', region: 'EUROPE', budgetPerDay: { backpacker: 65, budget: 95, comfort: 155, flashpacker: 235 }, character: ['city','culture'],          emoji: '🚤' },
+  { city: 'Milan',          country: 'Italy',         countryCode: 'IT', region: 'EUROPE', budgetPerDay: { backpacker: 60, budget: 88, comfort: 142, flashpacker: 215 }, character: ['city','food'],              emoji: '👗' },
+  { city: 'Naples',         country: 'Italy',         countryCode: 'IT', region: 'EUROPE', budgetPerDay: { backpacker: 48, budget: 70, comfort: 115, flashpacker: 170 }, character: ['city','food','culture'],   emoji: '🍕' },
+  { city: 'Amalfi Coast',   country: 'Italy',         countryCode: 'IT', region: 'EUROPE', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 195 }, character: ['beach','nature'],          emoji: '🌊' },
+  { city: 'Prague',         country: 'Czech Republic',countryCode: 'CZ', region: 'EUROPE', budgetPerDay: { backpacker: 40, budget: 58, comfort: 95,  flashpacker: 140 }, character: ['city','culture','party'],  emoji: '🏯' },
+  { city: 'Budapest',       country: 'Hungary',       countryCode: 'HU', region: 'EUROPE', budgetPerDay: { backpacker: 38, budget: 55, comfort: 90,  flashpacker: 135 }, character: ['city','culture','chill'],  emoji: '♨️' },
+  { city: 'Kraków',         country: 'Poland',        countryCode: 'PL', region: 'EUROPE', budgetPerDay: { backpacker: 35, budget: 50, comfort: 80,  flashpacker: 120 }, character: ['city','culture'],          emoji: '🏰' },
+  { city: 'Warsaw',         country: 'Poland',        countryCode: 'PL', region: 'EUROPE', budgetPerDay: { backpacker: 38, budget: 55, comfort: 90,  flashpacker: 135 }, character: ['city','culture'],          emoji: '🏙️' },
+  { city: 'Vienna',         country: 'Austria',       countryCode: 'AT', region: 'EUROPE', budgetPerDay: { backpacker: 60, budget: 88, comfort: 142, flashpacker: 215 }, character: ['city','culture'],          emoji: '🎻' },
+  { city: 'Salzburg',       country: 'Austria',       countryCode: 'AT', region: 'EUROPE', budgetPerDay: { backpacker: 58, budget: 84, comfort: 135, flashpacker: 205 }, character: ['city','culture','mountains'],emoji: '🎼' },
+  { city: 'Zurich',         country: 'Switzerland',   countryCode: 'CH', region: 'EUROPE', budgetPerDay: { backpacker: 90, budget: 130, comfort: 210, flashpacker: 320}, character: ['city','nature'],           emoji: '🏔️' },
+  { city: 'Geneva',         country: 'Switzerland',   countryCode: 'CH', region: 'EUROPE', budgetPerDay: { backpacker: 88, budget: 125, comfort: 205, flashpacker: 310}, character: ['city','nature'],           emoji: '🕊️' },
+  { city: 'Interlaken',     country: 'Switzerland',   countryCode: 'CH', region: 'EUROPE', budgetPerDay: { backpacker: 80, budget: 118, comfort: 190, flashpacker: 285}, character: ['nature','mountains'],      emoji: '🏔️' },
+  { city: 'Athens',         country: 'Greece',        countryCode: 'GR', region: 'EUROPE', budgetPerDay: { backpacker: 45, budget: 65, comfort: 105, flashpacker: 155 }, character: ['city','culture','beach'],  emoji: '🏛️' },
+  { city: 'Santorini',      country: 'Greece',        countryCode: 'GR', region: 'EUROPE', budgetPerDay: { backpacker: 60, budget: 88, comfort: 145, flashpacker: 220 }, character: ['beach','chill'],           emoji: '🌅' },
+  { city: 'Mykonos',        country: 'Greece',        countryCode: 'GR', region: 'EUROPE', budgetPerDay: { backpacker: 65, budget: 95, comfort: 158, flashpacker: 240 }, character: ['beach','party'],           emoji: '🎉' },
+  { city: 'Thessaloniki',   country: 'Greece',        countryCode: 'GR', region: 'EUROPE', budgetPerDay: { backpacker: 40, budget: 58, comfort: 95,  flashpacker: 142 }, character: ['city','food','culture'],   emoji: '🏛️' },
+  { city: 'Dubrovnik',      country: 'Croatia',       countryCode: 'HR', region: 'EUROPE', budgetPerDay: { backpacker: 50, budget: 73, comfort: 118, flashpacker: 178 }, character: ['beach','city','culture'],  emoji: '🏰' },
+  { city: 'Split',          country: 'Croatia',       countryCode: 'HR', region: 'EUROPE', budgetPerDay: { backpacker: 45, budget: 65, comfort: 105, flashpacker: 158 }, character: ['beach','city'],            emoji: '⛵' },
+  { city: 'Hvar',           country: 'Croatia',       countryCode: 'HR', region: 'EUROPE', budgetPerDay: { backpacker: 48, budget: 70, comfort: 115, flashpacker: 172 }, character: ['beach','party','chill'],   emoji: '🌊' },
+  { city: 'Ljubljana',      country: 'Slovenia',      countryCode: 'SI', region: 'EUROPE', budgetPerDay: { backpacker: 45, budget: 65, comfort: 105, flashpacker: 158 }, character: ['city','nature'],           emoji: '🏰' },
+  { city: 'Bled',           country: 'Slovenia',      countryCode: 'SI', region: 'EUROPE', budgetPerDay: { backpacker: 48, budget: 70, comfort: 115, flashpacker: 172 }, character: ['nature','mountains'],      emoji: '🏔️' },
+  { city: 'Kotor',          country: 'Montenegro',    countryCode: 'ME', region: 'EUROPE', budgetPerDay: { backpacker: 38, budget: 55, comfort: 90,  flashpacker: 135 }, character: ['beach','city','culture'],  emoji: '🏰' },
+  { city: 'Tirana',         country: 'Albania',       countryCode: 'AL', region: 'EUROPE', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['city','culture'],          emoji: '🦅' },
+  { city: 'Sarajevo',       country: 'Bosnia',        countryCode: 'BA', region: 'EUROPE', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75,  flashpacker: 110 }, character: ['city','culture'],          emoji: '🕌' },
+  { city: 'Belgrade',       country: 'Serbia',        countryCode: 'RS', region: 'EUROPE', budgetPerDay: { backpacker: 32, budget: 48, comfort: 78,  flashpacker: 115 }, character: ['city','party','culture'],  emoji: '🏙️' },
+  { city: 'Bucharest',      country: 'Romania',       countryCode: 'RO', region: 'EUROPE', budgetPerDay: { backpacker: 32, budget: 48, comfort: 78,  flashpacker: 115 }, character: ['city','culture'],          emoji: '🏰' },
+  { city: 'Sofia',          country: 'Bulgaria',      countryCode: 'BG', region: 'EUROPE', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75,  flashpacker: 110 }, character: ['city','culture'],          emoji: '🏛️' },
+  { city: 'Riga',           country: 'Latvia',        countryCode: 'LV', region: 'EUROPE', budgetPerDay: { backpacker: 40, budget: 58, comfort: 95,  flashpacker: 142 }, character: ['city','culture'],          emoji: '🏰' },
+  { city: 'Tallinn',        country: 'Estonia',       countryCode: 'EE', region: 'EUROPE', budgetPerDay: { backpacker: 42, budget: 60, comfort: 98,  flashpacker: 148 }, character: ['city','culture'],          emoji: '🏯' },
+  { city: 'Vilnius',        country: 'Lithuania',     countryCode: 'LT', region: 'EUROPE', budgetPerDay: { backpacker: 40, budget: 58, comfort: 95,  flashpacker: 142 }, character: ['city','culture'],          emoji: '🏰' },
+  { city: 'Copenhagen',     country: 'Denmark',       countryCode: 'DK', region: 'EUROPE', budgetPerDay: { backpacker: 80, budget: 118, comfort: 190, flashpacker: 285}, character: ['city','culture'],          emoji: '🧜' },
+  { city: 'Stockholm',      country: 'Sweden',        countryCode: 'SE', region: 'EUROPE', budgetPerDay: { backpacker: 78, budget: 115, comfort: 185, flashpacker: 278}, character: ['city','nature'],           emoji: '👑' },
+  { city: 'Oslo',           country: 'Norway',        countryCode: 'NO', region: 'EUROPE', budgetPerDay: { backpacker: 90, budget: 130, comfort: 210, flashpacker: 315}, character: ['city','nature'],           emoji: '🏔️' },
+  { city: 'Helsinki',       country: 'Finland',       countryCode: 'FI', region: 'EUROPE', budgetPerDay: { backpacker: 75, budget: 110, comfort: 178, flashpacker: 268}, character: ['city','nature'],           emoji: '🧊' },
+  { city: 'Reykjavik',      country: 'Iceland',       countryCode: 'IS', region: 'EUROPE', budgetPerDay: { backpacker: 95, budget: 140, comfort: 225, flashpacker: 340}, character: ['nature','mountains'],      emoji: '🌋' },
+  { city: 'London',         country: 'UK',            countryCode: 'GB', region: 'EUROPE', budgetPerDay: { backpacker: 80, budget: 118, comfort: 190, flashpacker: 285}, character: ['city','culture'],          emoji: '🎡' },
+  { city: 'Edinburgh',      country: 'UK',            countryCode: 'GB', region: 'EUROPE', budgetPerDay: { backpacker: 65, budget: 95, comfort: 155, flashpacker: 232}, character: ['city','culture','nature'], emoji: '🏰' },
+  { city: 'Dublin',         country: 'Ireland',       countryCode: 'IE', region: 'EUROPE', budgetPerDay: { backpacker: 70, budget: 102, comfort: 165, flashpacker: 248}, character: ['city','culture'],          emoji: '🍀' },
+  { city: 'Brussels',       country: 'Belgium',       countryCode: 'BE', region: 'EUROPE', budgetPerDay: { backpacker: 60, budget: 88, comfort: 142, flashpacker: 215}, character: ['city','culture','food'],   emoji: '🍫' },
+  { city: 'Bruges',         country: 'Belgium',       countryCode: 'BE', region: 'EUROPE', budgetPerDay: { backpacker: 55, budget: 80, comfort: 130, flashpacker: 195}, character: ['city','culture','chill'],  emoji: '🏰' },
+
+  // ── Latin America ─────────────────────────────────────────────────────────────
+  { city: 'Medellín',       country: 'Colombia',      countryCode: 'CO', region: 'LATAM', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['city','culture','party'],  emoji: '🌸' },
+  { city: 'Cartagena',      country: 'Colombia',      countryCode: 'CO', region: 'LATAM', budgetPerDay: { backpacker: 32, budget: 48, comfort: 78,  flashpacker: 115 }, character: ['beach','culture','city'],  emoji: '🏖️' },
+  { city: 'Bogotá',         country: 'Colombia',      countryCode: 'CO', region: 'LATAM', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['city','culture'],          emoji: '🏙️' },
+  { city: 'Mexico City',    country: 'Mexico',        countryCode: 'MX', region: 'LATAM', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75,  flashpacker: 110 }, character: ['city','culture','food'],   emoji: '🌮' },
+  { city: 'Cancún',         country: 'Mexico',        countryCode: 'MX', region: 'LATAM', budgetPerDay: { backpacker: 35, budget: 52, comfort: 88,  flashpacker: 130 }, character: ['beach','party'],           emoji: '🌴' },
+  { city: 'Tulum',          country: 'Mexico',        countryCode: 'MX', region: 'LATAM', budgetPerDay: { backpacker: 38, budget: 58, comfort: 95,  flashpacker: 145 }, character: ['beach','chill','culture'], emoji: '🏛️' },
+  { city: 'Oaxaca',         country: 'Mexico',        countryCode: 'MX', region: 'LATAM', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['culture','food','city'],   emoji: '🎨' },
+  { city: 'Buenos Aires',   country: 'Argentina',     countryCode: 'AR', region: 'LATAM', budgetPerDay: { backpacker: 25, budget: 38, comfort: 65,  flashpacker: 98  }, character: ['city','culture','food'],   emoji: '🥩' },
+  { city: 'Patagonia',      country: 'Argentina',     countryCode: 'AR', region: 'LATAM', budgetPerDay: { backpacker: 35, budget: 52, comfort: 88,  flashpacker: 130 }, character: ['nature','mountains'],      emoji: '🏔️' },
+  { city: 'Lima',           country: 'Peru',          countryCode: 'PE', region: 'LATAM', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['city','food','culture'],   emoji: '🍽️' },
+  { city: 'Cusco',          country: 'Peru',          countryCode: 'PE', region: 'LATAM', budgetPerDay: { backpacker: 25, budget: 38, comfort: 62,  flashpacker: 92  }, character: ['culture','mountains','nature'], emoji: '🏔️' },
+  { city: 'Rio de Janeiro', country: 'Brazil',        countryCode: 'BR', region: 'LATAM', budgetPerDay: { backpacker: 35, budget: 52, comfort: 88,  flashpacker: 130 }, character: ['beach','party','city'],    emoji: '🎉' },
+  { city: 'São Paulo',      country: 'Brazil',        countryCode: 'BR', region: 'LATAM', budgetPerDay: { backpacker: 32, budget: 48, comfort: 78,  flashpacker: 118 }, character: ['city','food','culture'],   emoji: '🏙️' },
+  { city: 'Santiago',       country: 'Chile',         countryCode: 'CL', region: 'LATAM', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75,  flashpacker: 112 }, character: ['city','culture'],          emoji: '🌋' },
+  { city: 'Havana',         country: 'Cuba',          countryCode: 'CU', region: 'LATAM', budgetPerDay: { backpacker: 30, budget: 45, comfort: 72,  flashpacker: 108 }, character: ['city','culture','chill'],  emoji: '🚗' },
+  { city: 'Quito',          country: 'Ecuador',       countryCode: 'EC', region: 'LATAM', budgetPerDay: { backpacker: 25, budget: 38, comfort: 62,  flashpacker: 92  }, character: ['city','culture','nature'], emoji: '🦅' },
+  { city: 'La Paz',         country: 'Bolivia',       countryCode: 'BO', region: 'LATAM', budgetPerDay: { backpacker: 20, budget: 30, comfort: 50,  flashpacker: 75  }, character: ['city','culture','mountains'], emoji: '🏔️' },
+  { city: 'Montevideo',     country: 'Uruguay',       countryCode: 'UY', region: 'LATAM', budgetPerDay: { backpacker: 30, budget: 45, comfort: 72,  flashpacker: 108 }, character: ['city','culture','beach'],  emoji: '🌊' },
+  { city: 'Panama City',    country: 'Panama',        countryCode: 'PA', region: 'LATAM', budgetPerDay: { backpacker: 35, budget: 52, comfort: 85,  flashpacker: 128 }, character: ['city','culture'],          emoji: '🌉' },
+  { city: 'San José',       country: 'Costa Rica',    countryCode: 'CR', region: 'LATAM', budgetPerDay: { backpacker: 38, budget: 57, comfort: 92,  flashpacker: 138 }, character: ['nature','city'],           emoji: '🐒' },
+
+  // ── Africa ────────────────────────────────────────────────────────────────────
+  { city: 'Cape Town',      country: 'South Africa',  countryCode: 'ZA', region: 'AFRICA', budgetPerDay: { backpacker: 35, budget: 52, comfort: 88,  flashpacker: 130 }, character: ['city','beach','nature'],   emoji: '🏔️' },
+  { city: 'Johannesburg',   country: 'South Africa',  countryCode: 'ZA', region: 'AFRICA', budgetPerDay: { backpacker: 32, budget: 48, comfort: 80,  flashpacker: 120 }, character: ['city','culture'],          emoji: '🦁' },
+  { city: 'Nairobi',        country: 'Kenya',         countryCode: 'KE', region: 'AFRICA', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75,  flashpacker: 112 }, character: ['city','nature'],           emoji: '🦒' },
+  { city: 'Mombasa',        country: 'Kenya',         countryCode: 'KE', region: 'AFRICA', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['beach','chill'],           emoji: '🏖️' },
+  { city: 'Zanzibar',       country: 'Tanzania',      countryCode: 'TZ', region: 'AFRICA', budgetPerDay: { backpacker: 38, budget: 57, comfort: 95,  flashpacker: 142 }, character: ['beach','chill','culture'], emoji: '🏝️' },
+  { city: 'Dar es Salaam',  country: 'Tanzania',      countryCode: 'TZ', region: 'AFRICA', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['city','culture'],          emoji: '🌆' },
+  { city: 'Addis Ababa',    country: 'Ethiopia',      countryCode: 'ET', region: 'AFRICA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 82  }, character: ['city','culture','food'],   emoji: '🏛️' },
+  { city: 'Accra',          country: 'Ghana',         countryCode: 'GH', region: 'AFRICA', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['city','culture','beach'],  emoji: '🥁' },
+  { city: 'Lagos',          country: 'Nigeria',       countryCode: 'NG', region: 'AFRICA', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75,  flashpacker: 112 }, character: ['city','culture'],          emoji: '🌆' },
+  { city: 'Dakar',          country: 'Senegal',       countryCode: 'SN', region: 'AFRICA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 62,  flashpacker: 92  }, character: ['city','beach','culture'],  emoji: '🌊' },
+  { city: 'Tunis',          country: 'Tunisia',       countryCode: 'TN', region: 'AFRICA', budgetPerDay: { backpacker: 25, budget: 38, comfort: 62,  flashpacker: 92  }, character: ['city','culture','beach'],  emoji: '🏛️' },
+  { city: 'Casablanca',     country: 'Morocco',       countryCode: 'MA', region: 'AFRICA', budgetPerDay: { backpacker: 28, budget: 42, comfort: 70,  flashpacker: 105 }, character: ['city','culture'],          emoji: '🏙️' },
+  { city: 'Kampala',        country: 'Uganda',        countryCode: 'UG', region: 'AFRICA', budgetPerDay: { backpacker: 22, budget: 33, comfort: 55,  flashpacker: 82  }, character: ['city','nature'],           emoji: '🦍' },
+  { city: 'Kigali',         country: 'Rwanda',        countryCode: 'RW', region: 'AFRICA', budgetPerDay: { backpacker: 30, budget: 45, comfort: 75,  flashpacker: 112 }, character: ['city','nature'],           emoji: '🌿' },
+
+  // ── North America ─────────────────────────────────────────────────────────────
+  { city: 'New York',       country: 'USA',           countryCode: 'US', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 90, budget: 130, comfort: 210, flashpacker: 320 }, character: ['city','culture'],  emoji: '🗽' },
+  { city: 'Los Angeles',    country: 'USA',           countryCode: 'US', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 85, budget: 125, comfort: 200, flashpacker: 305 }, character: ['city','beach'],    emoji: '🌴' },
+  { city: 'San Francisco',  country: 'USA',           countryCode: 'US', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 90, budget: 132, comfort: 212, flashpacker: 320 }, character: ['city','culture'],  emoji: '🌉' },
+  { city: 'Miami',          country: 'USA',           countryCode: 'US', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 80, budget: 118, comfort: 190, flashpacker: 285 }, character: ['beach','party','city'], emoji: '🌴' },
+  { city: 'New Orleans',    country: 'USA',           countryCode: 'US', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 65, budget: 95, comfort: 155, flashpacker: 232 },  character: ['city','food','culture'], emoji: '🎷' },
+  { city: 'Las Vegas',      country: 'USA',           countryCode: 'US', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 75, budget: 110, comfort: 178, flashpacker: 268 }, character: ['city','party'],    emoji: '🎰' },
+  { city: 'Toronto',        country: 'Canada',        countryCode: 'CA', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 75, budget: 110, comfort: 178, flashpacker: 268 }, character: ['city','culture'],  emoji: '🍁' },
+  { city: 'Vancouver',      country: 'Canada',        countryCode: 'CA', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 80, budget: 118, comfort: 190, flashpacker: 285 }, character: ['city','nature'],   emoji: '🏔️' },
+  { city: 'Montreal',       country: 'Canada',        countryCode: 'CA', region: 'NORTH_AMERICA', budgetPerDay: { backpacker: 65, budget: 95, comfort: 155, flashpacker: 232 },  character: ['city','culture'],  emoji: '🎵' },
+
+  // ── Oceania ───────────────────────────────────────────────────────────────────
+  { city: 'Sydney',         country: 'Australia',     countryCode: 'AU', region: 'OCEANIA', budgetPerDay: { backpacker: 80, budget: 118, comfort: 190, flashpacker: 285 }, character: ['city','beach','nature'], emoji: '🦘' },
+  { city: 'Melbourne',      country: 'Australia',     countryCode: 'AU', region: 'OCEANIA', budgetPerDay: { backpacker: 75, budget: 110, comfort: 178, flashpacker: 268 }, character: ['city','culture'],         emoji: '☕' },
+  { city: 'Brisbane',       country: 'Australia',     countryCode: 'AU', region: 'OCEANIA', budgetPerDay: { backpacker: 70, budget: 102, comfort: 165, flashpacker: 248 }, character: ['city','nature'],          emoji: '🌞' },
+  { city: 'Cairns',         country: 'Australia',     countryCode: 'AU', region: 'OCEANIA', budgetPerDay: { backpacker: 65, budget: 95, comfort: 155, flashpacker: 232 },  character: ['nature','beach'],         emoji: '🐠' },
+  { city: 'Auckland',       country: 'New Zealand',   countryCode: 'NZ', region: 'OCEANIA', budgetPerDay: { backpacker: 72, budget: 105, comfort: 170, flashpacker: 255 }, character: ['city','nature'],          emoji: '🥝' },
+  { city: 'Queenstown',     country: 'New Zealand',   countryCode: 'NZ', region: 'OCEANIA', budgetPerDay: { backpacker: 75, budget: 110, comfort: 178, flashpacker: 268 }, character: ['nature','mountains','party'], emoji: '🏔️' },
+  { city: 'Fiji Islands',   country: 'Fiji',          countryCode: 'FJ', region: 'OCEANIA', budgetPerDay: { backpacker: 55, budget: 82, comfort: 132, flashpacker: 200 },  character: ['beach','chill'],          emoji: '🏝️' },
+  { city: 'Bora Bora',      country: 'French Polynesia', countryCode: 'PF', region: 'OCEANIA', budgetPerDay: { backpacker: 120, budget: 180, comfort: 290, flashpacker: 440}, character: ['beach','chill'],     emoji: '🌺' },
 ]
 
-export function getDestinationsByRegion(region: string): Destination[] {
-  return DESTINATIONS.filter(d => d.region === region)
+// Helper: search by city or country
+export function searchDestinations(query: string): Destination[] {
+  const q = query.toLowerCase().trim()
+  if (!q) return []
+  return DESTINATIONS.filter(d =>
+    d.city.toLowerCase().includes(q) ||
+    d.country.toLowerCase().includes(q) ||
+    d.countryCode.toLowerCase() === q
+  ).slice(0, 8)
 }
 
-export function getBudgetForDestination(
-  dest: Destination,
-  travelerType: 'backpacker' | 'budget' | 'comfort' | 'flashpacker'
-): number {
-  return dest.budgetPerDay[travelerType]
-}
+export const REGIONS = [
+  { value: 'SEA',           label: 'Southeast Asia',  emoji: '🌴' },
+  { value: 'EAST_ASIA',     label: 'East Asia',       emoji: '🏯' },
+  { value: 'SOUTH_ASIA',    label: 'South Asia',      emoji: '🕌' },
+  { value: 'CENTRAL_ASIA',  label: 'Central Asia',    emoji: '🏕️' },
+  { value: 'MIDEAST',       label: 'Middle East',     emoji: '🌙' },
+  { value: 'EUROPE',        label: 'Europe',          emoji: '🏰' },
+  { value: 'LATAM',         label: 'Latin America',   emoji: '🦜' },
+  { value: 'AFRICA',        label: 'Africa',          emoji: '🦁' },
+  { value: 'NORTH_AMERICA', label: 'North America',   emoji: '🗽' },
+  { value: 'OCEANIA',       label: 'Oceania',         emoji: '🦘' },
+]
