@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, FileText, Plane, Hotel, Shield, Activity, Plus } from 'lucide-react'
+import { Upload, FileText, Plane, Hotel, Shield, Activity, Plus, Sparkles, Loader2 } from 'lucide-react'
 import { useTripStore } from '@/store/tripStore'
 import { cn } from '@/lib/utils'
 import type { TripDocument } from '@/types'
@@ -26,10 +26,14 @@ function DocIcon({ type }: { type: TripDocument['type'] }) {
 }
 
 export default function DocsPage() {
-  const { activeTrip, activeTripDocuments, addDocument } = useTripStore()
+  const { activeTrip, activeTripDocuments, addDocument, trackEvent } = useTripStore()
   const [addOpen, setAddOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [docType, setDocType] = useState<TripDocument['type']>('flight')
+  const [fileName, setFileName] = useState('')
+  const [fileBase64, setFileBase64] = useState<string | null>(null)
+  const [fileMime, setFileMime] = useState<string>('')
+  const [parsing, setParsing] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const trip = activeTrip()
@@ -44,17 +48,69 @@ export default function DocsPage() {
     )
   }
 
-  function handleAdd() {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setFileName(file.name)
+    setFileMime(file.type)
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      // Strip data URL prefix to get pure base64
+      const base64 = result.split(',')[1] ?? ''
+      setFileBase64(base64)
+      // Auto-fill title from filename if empty
+      if (!title) {
+        setTitle(file.name.replace(/\.[^.]+$/, ''))
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  async function handleAdd() {
     if (!title.trim()) return
+    setParsing(true)
+
+    let extractedData: Record<string, string> = {}
+    let parsedAt: string | undefined
+
+    try {
+      const res = await fetch('/api/parse-document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          type: docType,
+          fileBase64: fileBase64 ?? undefined,
+          mimeType: fileMime || undefined,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        extractedData = data.extractedData ?? {}
+        parsedAt = new Date().toISOString()
+      }
+    } catch {
+      // Continue without parsing
+    }
+
     addDocument({
       id: Math.random().toString(36).slice(2, 10),
       tripId: trip!.id,
       type: docType,
       title: title.trim(),
+      extractedData: Object.keys(extractedData).length > 0 ? extractedData : undefined,
+      parsedAt,
       createdAt: new Date().toISOString(),
     })
+    trackEvent('doc_uploaded', { type: docType })
+
     setTitle('')
     setDocType('flight')
+    setFileName('')
+    setFileBase64(null)
+    setFileMime('')
+    setParsing(false)
     setAddOpen(false)
   }
 
@@ -83,7 +139,7 @@ export default function DocsPage() {
       >
         <Upload size={24} className="text-gray-300 dark:text-slate-600 mx-auto mb-2" />
         <p className="text-sm font-medium text-gray-500">Add booking confirmation</p>
-        <p className="text-xs text-gray-400 mt-0.5">Flights, hotels, insurance, activities</p>
+        <p className="text-xs text-gray-400 mt-0.5">AI extracts flight numbers, dates & more</p>
       </div>
 
       {/* Doc list */}
@@ -103,13 +159,22 @@ export default function DocsPage() {
               <div className="space-y-2">
                 {group.docs.map(doc => (
                   <motion.div key={doc.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                    className="card p-3 flex items-center gap-3">
+                    className="card p-3 flex items-start gap-3">
                     <DocIcon type={doc.type} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{doc.title}</p>
-                      <p className="text-[10px] text-gray-400">{new Date(doc.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                      {doc.extractedData && Object.keys(doc.extractedData).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {Object.entries(doc.extractedData).slice(0, 3).map(([k, v]) => (
+                            <span key={k} className="text-[10px] bg-primary-50 dark:bg-primary-950 text-primary-600 px-1.5 py-0.5 rounded-full">
+                              {v}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-[10px] text-gray-400 mt-1">{new Date(doc.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                     </div>
-                    <FileText size={14} className="text-gray-300 shrink-0" />
+                    {doc.parsedAt && <Sparkles size={13} className="text-primary-400 shrink-0 mt-0.5" />}
                   </motion.div>
                 ))}
               </div>
@@ -123,7 +188,7 @@ export default function DocsPage() {
         {addOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-40" onClick={() => setAddOpen(false)} />
+              className="fixed inset-0 bg-black/40 z-40" onClick={() => !parsing && setAddOpen(false)} />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white dark:bg-slate-900 rounded-t-2xl shadow-2xl px-5 pb-8 pt-4">
@@ -144,18 +209,29 @@ export default function DocsPage() {
 
               <input type="text" placeholder="Document title (e.g. KLM BKK-DPS)" value={title}
                 onChange={e => setTitle(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleAdd()}
+                onKeyDown={e => e.key === 'Enter' && !parsing && handleAdd()}
                 className="input text-sm mb-3" autoFocus />
 
-              <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" />
+              <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
+                onChange={handleFileChange} />
               <button onClick={() => fileRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-400 hover:border-primary-300 transition-colors mb-3">
-                <Upload size={14} /> Attach file (optional)
+                className={cn(
+                  'w-full flex items-center justify-center gap-2 py-2.5 border border-dashed rounded-xl text-xs transition-colors mb-3',
+                  fileName
+                    ? 'border-primary-300 text-primary-600 bg-primary-50 dark:bg-primary-950'
+                    : 'border-gray-200 dark:border-slate-700 text-gray-400 hover:border-primary-300'
+                )}>
+                <Upload size={14} />
+                {fileName || 'Attach file (optional) — AI will extract info'}
               </button>
 
-              <button onClick={handleAdd} disabled={!title.trim()}
-                className={cn('btn-primary w-full justify-center py-3.5', !title.trim() && 'opacity-40 cursor-not-allowed')}>
-                Save document
+              <button onClick={handleAdd} disabled={!title.trim() || parsing}
+                className={cn('btn-primary w-full justify-center py-3.5', (!title.trim() || parsing) && 'opacity-60 cursor-not-allowed')}>
+                {parsing ? (
+                  <span className="flex items-center gap-2"><Loader2 size={15} className="animate-spin" /> Parsing with AI…</span>
+                ) : (
+                  <span className="flex items-center gap-2"><Sparkles size={15} /> Save &amp; parse</span>
+                )}
               </button>
             </motion.div>
           </>

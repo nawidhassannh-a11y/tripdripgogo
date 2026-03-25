@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import { motion } from 'framer-motion'
-import { Plus, ExternalLink, Plane, MapPin, Check, Clock } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Plus, ExternalLink, Plane, MapPin, Check, Clock, X } from 'lucide-react'
 import { useTripStore } from '@/store/tripStore'
 import { cn } from '@/lib/utils'
+import type { Stop } from '@/types'
 
 const TripMap = dynamic(() => import('@/components/TripMap').then(m => ({ default: m.TripMap })), {
   ssr: false,
@@ -13,39 +14,95 @@ const TripMap = dynamic(() => import('@/components/TripMap').then(m => ({ defaul
 })
 
 const AFFILIATE_LINKS = [
-  {
-    label: 'Google Flights',
-    desc: 'Best flight search',
-    emoji: '✈️',
-    href: 'https://www.google.com/flights',
-    color: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800',
-  },
-  {
-    label: 'Hostelworld',
-    desc: 'Hostels worldwide',
-    emoji: '🏠',
-    href: 'https://www.hostelworld.com',
-    color: 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800',
-  },
-  {
-    label: 'Airalo eSIM',
-    desc: 'Data in 200+ countries',
-    emoji: '📶',
-    href: 'https://www.airalo.com',
-    color: 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800',
-  },
-  {
-    label: 'SafetyWing',
-    desc: 'Travel insurance',
-    emoji: '🛡️',
-    href: 'https://safetywing.com',
-    color: 'bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800',
-  },
+  { label: 'Google Flights', desc: 'Best flight search',     emoji: '✈️', href: 'https://www.google.com/flights', color: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800' },
+  { label: 'Hostelworld',    desc: 'Hostels worldwide',      emoji: '🏠', href: 'https://www.hostelworld.com',   color: 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800' },
+  { label: 'Airalo eSIM',   desc: 'Data in 200+ countries', emoji: '📶', href: 'https://www.airalo.com',        color: 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' },
+  { label: 'SafetyWing',    desc: 'Travel insurance',       emoji: '🛡️', href: 'https://safetywing.com',        color: 'bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800' },
 ]
 
+function AddStopSheet({ tripId, onClose }: { tripId: string; onClose: () => void }) {
+  const { addStop } = useTripStore()
+  const [city, setCity] = useState('')
+  const [country, setCountry] = useState('')
+  const [countryCode, setCountryCode] = useState('')
+  const [days, setDays] = useState(7)
+  const [budget, setBudget] = useState(40)
+
+  function handleSave() {
+    if (!city.trim() || !country.trim()) return
+    const stop: Stop = {
+      id: Math.random().toString(36).slice(2, 10),
+      city: city.trim(),
+      country: country.trim(),
+      countryCode: countryCode.trim().toUpperCase() || 'XX',
+      days,
+      budgetPerDay: budget,
+      isActive: false,
+      isCompleted: false,
+    }
+    addStop(tripId, stop)
+    onClose()
+  }
+
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+      <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white dark:bg-slate-900 rounded-t-2xl shadow-2xl px-5 pb-10 pt-4">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-bold text-gray-900 dark:text-white text-lg">Add stop</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
+            <X size={15} className="text-gray-500" />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <input value={city} onChange={e => setCity(e.target.value)} placeholder="City (e.g. Chiang Mai)"
+            className="input text-sm" autoFocus />
+          <div className="flex gap-2">
+            <input value={country} onChange={e => setCountry(e.target.value)} placeholder="Country"
+              className="input text-sm flex-1" />
+            <input value={countryCode} onChange={e => setCountryCode(e.target.value)} placeholder="CC"
+              className="input text-sm w-16 text-center uppercase" maxLength={2} />
+          </div>
+
+          <div className="card p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-700 dark:text-gray-300">Days</span>
+              <span className="font-bold text-primary-600">{days}</span>
+            </div>
+            <input type="range" min={1} max={60} value={days} onChange={e => setDays(+e.target.value)}
+              className="w-full accent-primary-500" />
+          </div>
+
+          <div className="card p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-700 dark:text-gray-300">Budget / day</span>
+              <span className="font-bold text-primary-600">€{budget}</span>
+            </div>
+            <input type="range" min={10} max={200} step={5} value={budget} onChange={e => setBudget(+e.target.value)}
+              className="w-full accent-primary-500" />
+            <div className="flex justify-between text-[10px] text-gray-400">
+              <span>€10 budget</span><span>€80 comfort</span><span>€200 luxury</span>
+            </div>
+          </div>
+        </div>
+
+        <button onClick={handleSave} disabled={!city.trim() || !country.trim()}
+          className={cn('btn-primary w-full justify-center py-3.5 mt-5', (!city.trim() || !country.trim()) && 'opacity-40 cursor-not-allowed')}>
+          Add to route
+        </button>
+      </motion.div>
+    </>
+  )
+}
+
 export default function TripPage() {
-  const { activeTrip, updateStop } = useTripStore()
+  const { activeTrip, updateStop, trackEvent } = useTripStore()
   const [mapExpanded, setMapExpanded] = useState(false)
+  const [addStopOpen, setAddStopOpen] = useState(false)
 
   const trip = activeTrip()
 
@@ -81,9 +138,9 @@ export default function TripPage() {
       <div>
         <div className="flex items-center justify-between mb-2.5">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Stops</p>
-          <a href="/create-trip/manual" className="text-xs text-primary-600 font-semibold flex items-center gap-1">
-            <Plus size={12} /> Add
-          </a>
+          <button onClick={() => setAddStopOpen(true)} className="text-xs text-primary-600 font-semibold flex items-center gap-1">
+            <Plus size={12} /> Add stop
+          </button>
         </div>
 
         <div className="relative">
@@ -110,7 +167,10 @@ export default function TripPage() {
                       <p className="text-xs text-gray-400">{stop.country} · {stop.days} days · €{stop.budgetPerDay}/day</p>
                     </div>
                     <button
-                      onClick={() => updateStop(trip.id, stop.id, { isCompleted: !stop.isCompleted })}
+                      onClick={() => {
+                        updateStop(trip.id, stop.id, { isCompleted: !stop.isCompleted })
+                        if (!stop.isCompleted) trackEvent('check_in', { stopId: stop.id })
+                      }}
                       className={cn('text-xs px-2 py-1 rounded-lg transition-all', stop.isCompleted ? 'bg-gray-100 dark:bg-slate-700 text-gray-500' : 'bg-primary-50 dark:bg-primary-950 text-primary-600')}
                     >
                       {stop.isCompleted ? 'Undo' : 'Done'}
@@ -164,6 +224,7 @@ export default function TripPage() {
         <div className="grid grid-cols-2 gap-2">
           {AFFILIATE_LINKS.map(link => (
             <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
+              onClick={() => trackEvent('affiliate_click', { label: link.label })}
               className={cn('card p-3 border flex items-center gap-2.5 active:scale-95 transition-transform', link.color)}>
               <span className="text-xl">{link.emoji}</span>
               <div className="min-w-0">
@@ -175,6 +236,13 @@ export default function TripPage() {
           ))}
         </div>
       </div>
+
+      {/* Add Stop Sheet */}
+      <AnimatePresence>
+        {addStopOpen && (
+          <AddStopSheet tripId={trip.id} onClose={() => setAddStopOpen(false)} />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
