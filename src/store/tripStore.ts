@@ -141,7 +141,11 @@ export const useTripStore = create<TripStore>()(
       },
       activeTripExpenses: () => {
         const s = get()
-        return s.expenses.filter((e) => e.stopId && s.activeTrip()?.stops.some((st) => st.id === e.stopId))
+        const trip = s.activeTrip()
+        if (!trip) return []
+        const stopIds = new Set(trip.stops.map(st => st.id))
+        // Include expenses belonging to any stop in this trip, OR expenses with no stopId (added while no stops exist)
+        return s.expenses.filter((e) => !e.stopId || stopIds.has(e.stopId))
       },
       activeTripDocuments: () => {
         const s = get()

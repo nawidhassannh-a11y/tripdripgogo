@@ -27,15 +27,17 @@ export function AddExpenseSheet({ open, onClose, defaultStopId }: AddExpenseShee
   const [label, setLabel]       = useState('')
   const [tab, setTab]           = useState<'quick' | 'form'>('quick')
   const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'done'>('idle')
+  const [selectedStopId, setSelectedStopId] = useState<string>('')
 
   const inputRef = useRef<HTMLInputElement>(null)
   const trip = activeTrip()
   const activeStop = trip?.stops.find(s => s.isActive) ?? trip?.stops[0]
+  const resolvedStopId = defaultStopId !== undefined ? defaultStopId : (selectedStopId || activeStop?.id || '')
 
   function reset() {
     setRaw(''); setAmount(''); setCurrency('EUR')
     setCategory('food'); setLabel('')
-    setTab('quick'); setAiStatus('idle')
+    setTab('quick'); setAiStatus('idle'); setSelectedStopId('')
   }
 
   function handleClose() { reset(); onClose() }
@@ -78,7 +80,7 @@ export function AddExpenseSheet({ open, onClose, defaultStopId }: AddExpenseShee
       category,
       label: label || raw.slice(0, 30),
       date: new Date().toISOString(),
-      stopId: defaultStopId ?? activeStop?.id ?? '',
+      stopId: resolvedStopId,
     })
     trackEvent('expense_added', { category, amountEur: eur })
     handleClose()
@@ -98,7 +100,7 @@ export function AddExpenseSheet({ open, onClose, defaultStopId }: AddExpenseShee
       category,
       label: label || CATEGORY_META[category].label,
       date: new Date().toISOString(),
-      stopId: defaultStopId ?? activeStop?.id ?? '',
+      stopId: resolvedStopId,
     })
     trackEvent('expense_added', { category, amountEur: eur })
     handleClose()
@@ -133,6 +135,25 @@ export function AddExpenseSheet({ open, onClose, defaultStopId }: AddExpenseShee
                   <X size={18} />
                 </button>
               </div>
+
+              {/* Stop selector (if trip has multiple stops) */}
+              {trip && trip.stops.length > 1 && (
+                <div className="flex gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-0.5">
+                  {trip.stops.map(stop => (
+                    <button key={stop.id}
+                      onClick={() => setSelectedStopId(stop.id)}
+                      className={cn(
+                        'shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all border',
+                        resolvedStopId === stop.id
+                          ? 'bg-primary-500 text-white border-primary-500'
+                          : 'bg-gray-50 dark:bg-slate-800 text-gray-500 border-gray-200 dark:border-slate-700'
+                      )}>
+                      {stop.isActive && <span className="w-1.5 h-1.5 rounded-full bg-current inline-block" />}
+                      {stop.city}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Tab switch */}
               <div className="flex gap-1 bg-gray-100 dark:bg-slate-800 rounded-xl p-1 mb-4">

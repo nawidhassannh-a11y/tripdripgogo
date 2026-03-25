@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Check, Trash2, RotateCcw, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Check, Trash2, RotateCcw, ExternalLink, Moon, Sun } from 'lucide-react'
 import { useTripStore } from '@/store/tripStore'
 import { cn } from '@/lib/utils'
 
@@ -23,6 +23,19 @@ export default function SettingsPage() {
   const [traveler, setTraveler] = useState<'backpacker' | 'budget' | 'comfort' | 'flashpacker'>(profile?.travelerType ?? 'backpacker')
   const [saved, setSaved]       = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [dark, setDark] = useState(false)
+
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains('dark'))
+  }, [])
+
+  function toggleDark() {
+    const html = document.documentElement
+    const next = !html.classList.contains('dark')
+    html.classList.toggle('dark', next)
+    localStorage.setItem('theme', next ? 'dark' : 'light')
+    setDark(next)
+  }
 
   function save() {
     setProfile({ name, currency, homeCountry: profile?.homeCountry ?? '', travelerType: traveler as 'backpacker' | 'budget' | 'comfort' | 'flashpacker' })
@@ -109,6 +122,21 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Appearance */}
+      <div className="card p-4">
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Appearance</p>
+        <button onClick={toggleDark}
+          className="w-full flex items-center justify-between py-1">
+          <div className="flex items-center gap-3">
+            {dark ? <Moon size={18} className="text-primary-500" /> : <Sun size={18} className="text-amber-500" />}
+            <span className="text-sm font-medium text-gray-900 dark:text-white">{dark ? 'Dark mode' : 'Light mode'}</span>
+          </div>
+          <div className={cn('w-11 h-6 rounded-full relative transition-colors', dark ? 'bg-primary-500' : 'bg-gray-200')}>
+            <div className={cn('absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all', dark ? 'left-6' : 'left-1')} />
+          </div>
+        </button>
+      </div>
 
       {/* Links */}
       <div className="card p-4 space-y-2">
