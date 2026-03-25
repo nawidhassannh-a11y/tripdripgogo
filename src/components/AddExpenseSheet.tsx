@@ -120,7 +120,8 @@ export function AddExpenseSheet({ open, onClose, defaultStopId }: AddExpenseShee
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white dark:bg-slate-900 rounded-t-2xl shadow-2xl"
+            className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 rounded-t-[24px] shadow-2xl"
+            style={{ background: 'var(--surface)' }}
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">

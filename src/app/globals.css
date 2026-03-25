@@ -2,32 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Google Fonts ─────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,wght@1,400;1,600;1,700&display=swap');
-
 /* ── CSS Custom Properties ────────────────────────────────────────────── */
 :root {
   --primary:         #059467;
   --primary-10:      rgb(5 148 103 / 0.1);
   --primary-20:      rgb(5 148 103 / 0.2);
   --primary-40:      rgb(5 148 103 / 0.4);
-  --surface:         #f9fafb;
+  --surface:         #ffffff;
   --surface-dark:    #0f172a;
-  --card:            #ffffff;
-  --border:          #e5e7eb;
-  --text:            #111827;
-  --text-muted:      #6b7280;
-  --alert-danger:    #dc2626;
-  --alert-warning:   #d97706;
+  --card:            #F5F5F5;
+  --card-deep:       #EFEFEF;
+  --border:          #E8E8E8;
+  --text:            #000000;
+  --text2:           #6B6B6B;
+  --text3:           #ABABAB;
+  --green:           #34C759;
+  --green-s:         #E8F9ED;
+  --orange:          #FF9500;
+  --orange-s:        #FFF4E5;
+  --red:             #FF3B30;
+  --red-s:           #FFEBEA;
+  --blue:            #007AFF;
   --bottom-nav-h:    64px;
 }
 
 .dark {
   --surface:      #0f172a;
   --card:         #1e293b;
+  --card-deep:    #162032;
   --border:       #334155;
   --text:         #f8fafc;
-  --text-muted:   #94a3b8;
+  --text2:        #94a3b8;
+  --text3:        #64748b;
 }
 
 /* ── Base ────────────────────────────────────────────────────────────── */
@@ -37,7 +43,7 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-inter), -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
   background-color: var(--surface);
   color: var(--text);
   min-height: 100dvh;
@@ -45,58 +51,87 @@ body {
 
 /* ── Utility Classes ─────────────────────────────────────────────────── */
 @layer utilities {
-  /* Layout */
   .safe-bottom { padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Typography */
-  .font-display { font-family: 'Newsreader', Georgia, serif; font-style: italic; }
+  .font-display { font-family: var(--font-newsreader), Georgia, serif; font-style: italic; }
   .text-balance  { text-wrap: balance; }
 
-  /* Gradients */
-  .gradient-hero   { background-image: var(--gradient-hero,   linear-gradient(135deg, #059467 0%, #10b981 50%, #34d399 100%)); }
-  .gradient-budget { background-image: var(--gradient-budget, linear-gradient(90deg,  #059467 0%, #10b981 100%)); }
-  .gradient-card   { background-image: linear-gradient(180deg, transparent 0%, rgb(15 23 42 / 0.8) 100%); }
+  /* Section label */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 12px;
+  }
 
-  /* Glassmorphic */
-  .glass { backdrop-filter: blur(12px); background-color: rgb(255 255 255 / 0.85); }
-  .dark .glass { background-color: rgb(15 23 42 / 0.85); }
-
-  /* Timeline dots (Stitch pattern) */
-  .timeline-dot-primary  { background-color: var(--primary); }
-  .timeline-dot-mid      { background-color: var(--primary-40); }
-  .timeline-dot-faint    { background-color: var(--primary-20); }
+  /* Hero number */
+  .hero-amt {
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -2.5px;
+    line-height: 1;
+  }
 }
 
 /* ── Component Defaults ──────────────────────────────────────────────── */
 @layer components {
-  /* Card */
+  /* Card — Cal AI style: #F5F5F5 bg, 20px radius, no border */
   .card {
-    @apply bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-card;
+    background: var(--card);
+    border-radius: 20px;
+    padding: 18px;
   }
 
-  /* Button primary */
+  /* Button primary — Cal AI: black */
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-full
-           shadow-sm hover:bg-primary-700 active:scale-95 transition-all duration-150;
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold
+           active:scale-95 transition-all duration-150;
+    border-radius: 14px;
   }
 
   /* Button secondary */
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-primary-50 dark:bg-primary-950 text-primary-600
-           font-semibold rounded-full border border-primary-200 dark:border-primary-800
-           hover:bg-primary-100 active:scale-95 transition-all duration-150;
+    @apply inline-flex items-center gap-2 px-6 py-3 font-semibold
+           border border-[#E8E8E8] active:scale-95 transition-all duration-150;
+    background: var(--card);
+    color: var(--text);
+    border-radius: 14px;
   }
 
-  /* Input */
+  /* Input — Cal AI: #F5F5F5 bg, no border */
   .input {
-    @apply w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-600
-           bg-white dark:bg-slate-800 text-gray-900 dark:text-white
-           focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600
-           placeholder:text-gray-400 transition;
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    background: var(--card);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: background 0.15s;
   }
+  .input::placeholder { color: var(--text3); }
+  .input:focus { background: var(--card-deep); }
 
   /* Bottom navigation height spacer */
   .page-content { @apply pb-[calc(64px+env(safe-area-inset-bottom,0px))]; }
+
+  /* Progress track */
+  .prog-track {
+    height: 7px;
+    background: var(--card-deep);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .prog-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--green);
+  }
 }

@@ -3,22 +3,15 @@
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, ExternalLink, Plane, MapPin, Check, Clock, X } from 'lucide-react'
+import { Plus, ExternalLink, Plane, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { useTripStore } from '@/store/tripStore'
-import { cn } from '@/lib/utils'
 import type { Stop } from '@/types'
 
 const TripMap = dynamic(() => import('@/components/TripMap').then(m => ({ default: m.TripMap })), {
   ssr: false,
-  loading: () => <div className="h-48 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />,
+  loading: () => <div style={{ height: 160, background: 'var(--card)', borderRadius: 20, marginBottom: 16 }} />,
 })
 
-const AFFILIATE_LINKS = [
-  { label: 'Google Flights', desc: 'Best flight search',     emoji: '✈️', href: 'https://www.google.com/flights', color: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800' },
-  { label: 'Hostelworld',    desc: 'Hostels worldwide',      emoji: '🏠', href: 'https://www.hostelworld.com',   color: 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800' },
-  { label: 'Airalo eSIM',   desc: 'Data in 200+ countries', emoji: '📶', href: 'https://www.airalo.com',        color: 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' },
-  { label: 'SafetyWing',    desc: 'Travel insurance',       emoji: '🛡️', href: 'https://safetywing.com',        color: 'bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800' },
-]
 
 function AddStopSheet({ tripId, onClose }: { tripId: string; onClose: () => void }) {
   const { addStop } = useTripStore()
@@ -32,13 +25,9 @@ function AddStopSheet({ tripId, onClose }: { tripId: string; onClose: () => void
     if (!city.trim() || !country.trim()) return
     const stop: Stop = {
       id: Math.random().toString(36).slice(2, 10),
-      city: city.trim(),
-      country: country.trim(),
+      city: city.trim(), country: country.trim(),
       countryCode: countryCode.trim().toUpperCase() || 'XX',
-      days,
-      budgetPerDay: budget,
-      isActive: false,
-      isCompleted: false,
+      days, budgetPerDay: budget, isActive: false, isCompleted: false,
     }
     addStop(tripId, stop)
     onClose()
@@ -50,48 +39,47 @@ function AddStopSheet({ tripId, onClose }: { tripId: string; onClose: () => void
         className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
       <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white dark:bg-slate-900 rounded-t-2xl shadow-2xl px-5 pb-10 pt-4">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-bold text-gray-900 dark:text-white text-lg">Add stop</h3>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
-            <X size={15} className="text-gray-500" />
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 rounded-t-[24px] shadow-2xl px-6 pb-10 pt-4"
+        style={{ background: 'var(--surface)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>Add stop</h3>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--card)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={15} color="var(--text2)" />
           </button>
         </div>
 
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input value={city} onChange={e => setCity(e.target.value)} placeholder="City (e.g. Chiang Mai)"
-            className="input text-sm" autoFocus />
-          <div className="flex gap-2">
+            className="input" autoFocus />
+          <div style={{ display: 'flex', gap: 8 }}>
             <input value={country} onChange={e => setCountry(e.target.value)} placeholder="Country"
-              className="input text-sm flex-1" />
+              className="input" style={{ flex: 1 }} />
             <input value={countryCode} onChange={e => setCountryCode(e.target.value)} placeholder="CC"
-              className="input text-sm w-16 text-center uppercase" maxLength={2} />
+              className="input" style={{ width: 64, textAlign: 'center', textTransform: 'uppercase' }} maxLength={2} />
           </div>
 
-          <div className="card p-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700 dark:text-gray-300">Days</span>
-              <span className="font-bold text-primary-600">{days}</span>
+          <div style={{ background: 'var(--card)', borderRadius: 14, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 13, color: 'var(--text2)' }}>Days</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{days}</span>
             </div>
             <input type="range" min={1} max={60} value={days} onChange={e => setDays(+e.target.value)}
-              className="w-full accent-primary-500" />
+              style={{ width: '100%', accentColor: '#000' }} />
           </div>
 
-          <div className="card p-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700 dark:text-gray-300">Budget / day</span>
-              <span className="font-bold text-primary-600">€{budget}</span>
+          <div style={{ background: 'var(--card)', borderRadius: 14, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 13, color: 'var(--text2)' }}>Budget / day</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>€{budget}</span>
             </div>
             <input type="range" min={10} max={200} step={5} value={budget} onChange={e => setBudget(+e.target.value)}
-              className="w-full accent-primary-500" />
-            <div className="flex justify-between text-[10px] text-gray-400">
-              <span>€10 budget</span><span>€80 comfort</span><span>€200 luxury</span>
-            </div>
+              style={{ width: '100%', accentColor: '#000' }} />
           </div>
         </div>
 
         <button onClick={handleSave} disabled={!city.trim() || !country.trim()}
-          className={cn('btn-primary w-full justify-center py-3.5 mt-5', (!city.trim() || !country.trim()) && 'opacity-40 cursor-not-allowed')}>
+          className="btn-primary"
+          style={{ width: '100%', justifyContent: 'center', padding: 18, marginTop: 20, opacity: (!city.trim() || !country.trim()) ? 0.4 : 1 }}>
           Add to route
         </button>
       </motion.div>
@@ -99,145 +87,212 @@ function AddStopSheet({ tripId, onClose }: { tripId: string; onClose: () => void
   )
 }
 
+function StopCard({ stop, tripId }: { stop: Stop; tripId: string }) {
+  const { updateStop, trackEvent } = useTripStore()
+  const [expanded, setExpanded] = useState(stop.isActive)
+
+  const dotColor = stop.isCompleted ? '#ABABAB' : stop.isActive ? '#34C759' : '#E8E8E8'
+
+  return (
+    <div style={{
+      background: 'var(--card)', borderRadius: 20, marginBottom: 8, overflow: 'hidden',
+      border: stop.isActive ? '1.5px solid rgba(52,199,89,0.5)' : '1.5px solid transparent',
+      opacity: stop.isCompleted ? 0.5 : 1,
+    }}>
+      <button
+        onClick={() => setExpanded(p => !p)}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '16px 18px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+      >
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+        <span style={{ fontSize: 28 }}>{stop.countryCode ? getFlag(stop.countryCode) : '🌍'}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{stop.city}</div>
+          <div style={{ fontSize: 12, color: 'var(--text2)' }}>{stop.country}</div>
+        </div>
+        <div style={{ textAlign: 'right', marginRight: 8 }}>
+          <div style={{ fontSize: 13, color: 'var(--text2)' }}>{stop.days}d · €{stop.budgetPerDay}/d</div>
+          {stop.isActive && (
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#34C759', marginTop: 2 }}>NOW</div>
+          )}
+        </div>
+        {expanded ? <ChevronUp size={14} color="var(--text3)" /> : <ChevronDown size={14} color="var(--text3)" />}
+      </button>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            style={{ overflow: 'hidden' }}>
+            <div style={{ padding: '0 18px 18px', borderTop: '1px solid var(--border)' }}>
+              {stop.character && (
+                <p style={{ fontSize: 14, color: 'var(--text2)', fontStyle: 'italic', margin: '12px 0' }}>
+                  &ldquo;{stop.character}&rdquo;
+                </p>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: 'var(--text3)' }}>BUDGET</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>€{stop.budgetPerDay * stop.days} total</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+                <a href="https://www.hostelworld.com" target="_blank" rel="noopener noreferrer"
+                  style={{ padding: '6px 12px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 11, color: 'var(--text)', background: 'white', textDecoration: 'none' }}>
+                  🏨 Hostelworld
+                </a>
+                <a href="https://www.skyscanner.com" target="_blank" rel="noopener noreferrer"
+                  style={{ padding: '6px 12px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 11, color: 'var(--text)', background: 'white', textDecoration: 'none' }}>
+                  ✈️ Skyscanner
+                </a>
+                <a href="https://www.airalo.com" target="_blank" rel="noopener noreferrer"
+                  style={{ padding: '6px 12px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 11, color: 'var(--text)', background: 'white', textDecoration: 'none' }}>
+                  📶 Airalo
+                </a>
+              </div>
+              <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => { updateStop(tripId, stop.id, { isCompleted: !stop.isCompleted }); if (!stop.isCompleted) trackEvent('check_in', { stopId: stop.id }) }}
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                    background: stop.isCompleted ? 'var(--card-deep)' : '#000', color: stop.isCompleted ? 'var(--text2)' : '#fff',
+                  }}
+                >
+                  {stop.isCompleted ? 'Mark active' : 'Mark done'}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function getFlag(cc: string): string {
+  if (!cc || cc.length !== 2) return '🌍'
+  try {
+    const u = cc.toUpperCase()
+    return String.fromCodePoint(0x1F1E6 - 65 + u.charCodeAt(0), 0x1F1E6 - 65 + u.charCodeAt(1))
+  } catch { return '🌍' }
+}
+
 export default function TripPage() {
-  const { activeTrip, updateStop, trackEvent } = useTripStore()
-  const [mapExpanded, setMapExpanded] = useState(false)
+  const { activeTrip } = useTripStore()
   const [addStopOpen, setAddStopOpen] = useState(false)
 
   const trip = activeTrip()
 
   if (!trip) {
     return (
-      <div className="min-h-[calc(100dvh-64px)] flex flex-col items-center justify-center px-6 text-center">
-        <div className="text-4xl mb-3">🗺️</div>
-        <p className="text-gray-500 text-sm">No active trip. <a href="/create-trip" className="text-primary-600 underline">Create one</a></p>
+      <div style={{ minHeight: 'calc(100dvh - 64px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🗺️</div>
+        <p style={{ color: 'var(--text2)', fontSize: 14 }}>No active trip. <a href="/home" style={{ color: '#000', fontWeight: 700 }}>Create one</a></p>
       </div>
     )
   }
 
-  const completedStops = trip.stops.filter(s => s.isCompleted).length
-  const totalStops = trip.stops.length
-
   return (
-    <div className="px-4 pt-5 pb-2 space-y-4">
-      <div>
-        <p className="text-xs text-gray-400 font-medium">Route</p>
-        <h1 className="font-bold text-xl text-gray-900 dark:text-white">{trip.emoji} {trip.name}</h1>
-        <p className="text-xs text-gray-400 mt-0.5">{completedStops}/{totalStops} stops done · {trip.durationWeeks} weeks</p>
+    <div style={{ padding: '20px 24px 8px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)', letterSpacing: -0.5 }}>
+          {trip.emoji} {trip.name}
+        </h1>
+        <p style={{ fontSize: 14, color: 'var(--text2)', marginTop: 4 }}>
+          {trip.stops.length} stops · {trip.stops.reduce((s, st) => s + st.days, 0)} days · €{trip.totalBudget.toLocaleString()}
+        </p>
+      </div>
+
+      {/* Route pills */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, overflowX: 'auto', marginBottom: 24 }} className="no-scrollbar">
+        <span style={{ fontSize: 18 }}>🏠</span>
+        <span style={{ fontSize: 18, color: 'var(--text3)' }}>›</span>
+        {trip.stops.map((stop, i) => (
+          <div key={stop.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5, padding: '8px 12px', borderRadius: 999,
+              background: stop.isActive ? '#000' : 'var(--card)',
+              opacity: stop.isCompleted ? 0.4 : 1, flexShrink: 0,
+            }}>
+              <span style={{ fontSize: 14 }}>{getFlag(stop.countryCode ?? '')}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: stop.isActive ? '#fff' : 'var(--text)' }}>
+                {stop.city}
+              </span>
+            </div>
+            {i < trip.stops.length - 1 && (
+              <span style={{ fontSize: 18, color: 'var(--text3)' }}>›</span>
+            )}
+          </div>
+        ))}
+        <span style={{ fontSize: 18, color: 'var(--text3)' }}>›</span>
+        <span style={{ fontSize: 18 }}>🏠</span>
       </div>
 
       {/* Map */}
-      <div>
-        <TripMap stops={trip.stops} className={cn('w-full transition-all duration-300', mapExpanded ? 'h-72' : 'h-48')} />
-        <button onClick={() => setMapExpanded(p => !p)} className="text-xs text-primary-600 mt-1.5 w-full text-center">
-          {mapExpanded ? 'Collapse map ↑' : 'Expand map ↓'}
-        </button>
+      <div style={{ borderRadius: 20, overflow: 'hidden', marginBottom: 16 }}>
+        <TripMap stops={trip.stops} className="w-full h-40" />
       </div>
 
       {/* Stops */}
-      <div>
-        <div className="flex items-center justify-between mb-2.5">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Stops</p>
-          <button onClick={() => setAddStopOpen(true)} className="text-xs text-primary-600 font-semibold flex items-center gap-1">
-            <Plus size={12} /> Add stop
-          </button>
-        </div>
-
-        <div className="relative">
-          <div className="absolute left-[19px] top-6 bottom-6 w-px bg-gray-100 dark:bg-slate-700" />
-          <div className="space-y-3">
-            {trip.stops.map((stop, i) => (
-              <motion.div key={stop.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
-                className="flex items-start gap-3">
-                <div className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center shrink-0 z-10 text-sm border-2',
-                  stop.isCompleted ? 'bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-400' :
-                  stop.isActive ? 'bg-primary-500 border-primary-500 text-white' :
-                  'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-500'
-                )}>
-                  {stop.isCompleted ? <Check size={16} /> : stop.isActive ? <MapPin size={16} /> : i + 1}
-                </div>
-                <div className={cn('flex-1 card p-3', stop.isActive && 'border-primary-200 dark:border-primary-800')}>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="font-semibold text-sm text-gray-900 dark:text-white">{stop.city}</p>
-                        {stop.isActive && <span className="text-[10px] bg-primary-500 text-white px-1.5 py-0.5 rounded-full font-bold">NOW</span>}
-                      </div>
-                      <p className="text-xs text-gray-400">{stop.country} · {stop.days} days · €{stop.budgetPerDay}/day</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        updateStop(trip.id, stop.id, { isCompleted: !stop.isCompleted })
-                        if (!stop.isCompleted) trackEvent('check_in', { stopId: stop.id })
-                      }}
-                      className={cn('text-xs px-2 py-1 rounded-lg transition-all', stop.isCompleted ? 'bg-gray-100 dark:bg-slate-700 text-gray-500' : 'bg-primary-50 dark:bg-primary-950 text-primary-600')}
-                    >
-                      {stop.isCompleted ? 'Undo' : 'Done'}
-                    </button>
-                  </div>
-                  {stop.character && (
-                    <p className="text-[11px] text-gray-400 mt-1.5 italic">{stop.character}</p>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div className="section-label" style={{ margin: 0 }}>STOPS</div>
+        <button onClick={() => setAddStopOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 600, color: 'var(--text)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <Plus size={14} /> Add stop
+        </button>
       </div>
+
+      {trip.stops.map((stop, i) => (
+        <div key={stop.id}>
+          <StopCard stop={stop} tripId={trip.id} />
+          {/* Connector */}
+          {i < trip.stops.length - 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '2px 0' }}>
+              <div style={{ width: 1, height: 10, background: 'var(--border)' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '10px 14px', width: '100%' }}>
+                <span style={{ fontSize: 16 }}>✈️</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                    {stop.city} → {trip.stops[i + 1].city}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>Via Skyscanner · Rome2Rio</div>
+                </div>
+                <a href="https://www.skyscanner.com" target="_blank" rel="noopener noreferrer"
+                  style={{ padding: '4px 10px', borderRadius: 999, background: '#FFF4E5', color: '#FF9500', fontSize: 10, fontWeight: 700, textDecoration: 'none' }}>
+                  To book
+                </a>
+              </div>
+              <div style={{ width: 1, height: 10, background: 'var(--border)' }} />
+            </div>
+          )}
+        </div>
+      ))}
 
       {/* Flights */}
       {trip.flights && trip.flights.length > 0 && (
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">Flights</p>
-          <div className="space-y-2">
-            {trip.flights.map(flight => (
-              <div key={flight.id} className="card p-3 flex items-center gap-3">
-                <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
-                  flight.status === 'booked' ? 'bg-primary-50 dark:bg-primary-950' : 'bg-amber-50 dark:bg-amber-950')}>
-                  <Plane size={15} className={flight.status === 'booked' ? 'text-primary-500' : 'text-amber-500'} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {flight.flightNumber ?? 'Flight to book'}
-                  </p>
-                  <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                    {flight.status === 'booked' ? <><Check size={10} className="text-primary-500" /> Booked</> : <><Clock size={10} /> To book</>}
-                    {flight.price ? ` · €${flight.price}` : ''}
-                  </p>
-                </div>
-                {flight.status !== 'booked' && (
-                  <a href="https://www.google.com/flights" target="_blank" rel="noopener noreferrer"
-                    className="text-xs text-primary-600 font-semibold flex items-center gap-1">
-                    Search <ExternalLink size={11} />
-                  </a>
-                )}
+        <>
+          <div className="section-label" style={{ marginTop: 24 }}>FLIGHTS</div>
+          {trip.flights.map(flight => (
+            <div key={flight.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--card)', borderRadius: 16, padding: '14px 16px', marginBottom: 8 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: flight.status === 'booked' ? '#E8F9ED' : '#FFF4E5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Plane size={16} color={flight.status === 'booked' ? '#34C759' : '#FF9500'} />
               </div>
-            ))}
-          </div>
-        </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{flight.flightNumber ?? 'Flight to book'}</p>
+                <p style={{ fontSize: 11, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                  {flight.status === 'booked' ? '✓ Booked' : '○ To book'}
+                  {flight.price ? ` · €${flight.price}` : ''}
+                </p>
+              </div>
+              {flight.status !== 'booked' && (
+                <a href="https://www.google.com/flights" target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}>
+                  Search <ExternalLink size={11} />
+                </a>
+              )}
+            </div>
+          ))}
+        </>
       )}
 
-      {/* Smart links */}
-      <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">Smart links</p>
-        <div className="grid grid-cols-2 gap-2">
-          {AFFILIATE_LINKS.map(link => (
-            <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
-              onClick={() => trackEvent('affiliate_click', { label: link.label })}
-              className={cn('card p-3 border flex items-center gap-2.5 active:scale-95 transition-transform', link.color)}>
-              <span className="text-xl">{link.emoji}</span>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{link.label}</p>
-                <p className="text-[10px] text-gray-400 truncate">{link.desc}</p>
-              </div>
-              <ExternalLink size={11} className="text-gray-300 ml-auto shrink-0" />
-            </a>
-          ))}
-        </div>
-      </div>
+      <div style={{ height: 32 }} />
 
-      {/* Add Stop Sheet */}
       <AnimatePresence>
         {addStopOpen && (
           <AddStopSheet tripId={trip.id} onClose={() => setAddStopOpen(false)} />

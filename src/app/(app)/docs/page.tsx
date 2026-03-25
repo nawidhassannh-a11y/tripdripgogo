@@ -2,28 +2,30 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, FileText, Plane, Hotel, Shield, Activity, Plus, Sparkles, Loader2 } from 'lucide-react'
+import { Upload, Plus, Sparkles, Loader2, X } from 'lucide-react'
 import { useTripStore } from '@/store/tripStore'
-import { cn } from '@/lib/utils'
 import type { TripDocument } from '@/types'
 
-const DOC_TYPES: { type: TripDocument['type']; label: string; icon: React.ElementType; color: string }[] = [
-  { type: 'flight',     label: 'Flight',     icon: Plane,      color: 'text-blue-500 bg-blue-50 dark:bg-blue-950' },
-  { type: 'hotel',      label: 'Hotel',      icon: Hotel,      color: 'text-purple-500 bg-purple-50 dark:bg-purple-950' },
-  { type: 'insurance',  label: 'Insurance',  icon: Shield,     color: 'text-green-500 bg-green-50 dark:bg-green-950' },
-  { type: 'activity',   label: 'Activity',   icon: Activity,   color: 'text-pink-500 bg-pink-50 dark:bg-pink-950' },
-  { type: 'other',      label: 'Other',      icon: FileText,   color: 'text-gray-500 bg-gray-100 dark:bg-slate-800' },
+const DOC_TYPES: { type: TripDocument['type']; label: string; emoji: string }[] = [
+  { type: 'flight',    label: 'Flight',    emoji: '✈️' },
+  { type: 'hotel',     label: 'Hotel',     emoji: '🏨' },
+  { type: 'insurance', label: 'Insurance', emoji: '🛡️' },
+  { type: 'activity',  label: 'Activity',  emoji: '🎯' },
+  { type: 'other',     label: 'Other',     emoji: '📄' },
 ]
 
-function DocIcon({ type }: { type: TripDocument['type'] }) {
-  const meta = DOC_TYPES.find(d => d.type === type) ?? DOC_TYPES[DOC_TYPES.length - 1]
-  const Icon = meta.icon
-  return (
-    <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', meta.color)}>
-      <Icon size={18} />
-    </div>
-  )
+const DOC_EMOJIS: Record<string, string> = {
+  flight: '✈️', hotel: '🏨', insurance: '🛡️', activity: '🎯', other: '📄',
 }
+
+// eSIM data per country code
+const ESIM_OFFERS = [
+  { flag: '🇹🇭', country: 'Thailand',  price: 'From €4.50 / 1GB' },
+  { flag: '🇮🇩', country: 'Indonesia', price: 'From €3.50 / 1GB' },
+  { flag: '🇻🇳', country: 'Vietnam',   price: 'From €3.00 / 1GB' },
+  { flag: '🇪🇸', country: 'Spain',     price: 'From €2.50 / 1GB' },
+  { flag: '🇯🇵', country: 'Japan',     price: 'From €5.00 / 1GB' },
+]
 
 export default function DocsPage() {
   const { activeTrip, activeTripDocuments, addDocument, trackEvent } = useTripStore()
@@ -41,9 +43,9 @@ export default function DocsPage() {
 
   if (!trip) {
     return (
-      <div className="min-h-[calc(100dvh-64px)] flex flex-col items-center justify-center px-6 text-center">
-        <div className="text-4xl mb-3">📄</div>
-        <p className="text-gray-500 text-sm">No active trip. <a href="/create-trip" className="text-primary-600 underline">Create one</a></p>
+      <div style={{ minHeight: 'calc(100dvh - 64px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>📄</div>
+        <p style={{ color: 'var(--text2)', fontSize: 14 }}>No active trip. <a href="/home" style={{ color: '#000', fontWeight: 700 }}>Create one</a></p>
       </div>
     )
   }
@@ -56,13 +58,9 @@ export default function DocsPage() {
     const reader = new FileReader()
     reader.onload = () => {
       const result = reader.result as string
-      // Strip data URL prefix to get pure base64
       const base64 = result.split(',')[1] ?? ''
       setFileBase64(base64)
-      // Auto-fill title from filename if empty
-      if (!title) {
-        setTitle(file.name.replace(/\.[^.]+$/, ''))
-      }
+      if (!title) setTitle(file.name.replace(/\.[^.]+$/, ''))
     }
     reader.readAsDataURL(file)
   }
@@ -70,48 +68,30 @@ export default function DocsPage() {
   async function handleAdd() {
     if (!title.trim()) return
     setParsing(true)
-
     let extractedData: Record<string, string> = {}
     let parsedAt: string | undefined
-
     try {
       const res = await fetch('/api/parse-document', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          type: docType,
-          fileBase64: fileBase64 ?? undefined,
-          mimeType: fileMime || undefined,
-        }),
+        body: JSON.stringify({ title: title.trim(), type: docType, fileBase64: fileBase64 ?? undefined, mimeType: fileMime || undefined }),
       })
       if (res.ok) {
         const data = await res.json()
         extractedData = data.extractedData ?? {}
         parsedAt = new Date().toISOString()
       }
-    } catch {
-      // Continue without parsing
-    }
+    } catch { /* continue without parsing */ }
 
     addDocument({
       id: Math.random().toString(36).slice(2, 10),
-      tripId: trip!.id,
-      type: docType,
-      title: title.trim(),
+      tripId: trip!.id, type: docType, title: title.trim(),
       extractedData: Object.keys(extractedData).length > 0 ? extractedData : undefined,
-      parsedAt,
-      createdAt: new Date().toISOString(),
+      parsedAt, createdAt: new Date().toISOString(),
     })
     trackEvent('doc_uploaded', { type: docType })
-
-    setTitle('')
-    setDocType('flight')
-    setFileName('')
-    setFileBase64(null)
-    setFileMime('')
-    setParsing(false)
-    setAddOpen(false)
+    setTitle(''); setDocType('flight'); setFileName(''); setFileBase64(null); setFileMime('')
+    setParsing(false); setAddOpen(false)
   }
 
   const grouped = DOC_TYPES.map(dt => ({
@@ -119,69 +99,117 @@ export default function DocsPage() {
     docs: docs.filter(d => d.type === dt.type),
   })).filter(g => g.docs.length > 0)
 
+  // Determine eSIM offers based on trip stops
+  const relevantEsim = ESIM_OFFERS.slice(0, 3)
+
   return (
-    <div className="px-4 pt-5 pb-2 space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs text-gray-400 font-medium">Documents</p>
-          <h1 className="font-bold text-xl text-gray-900 dark:text-white">{trip.emoji} {trip.name}</h1>
-        </div>
-        <button onClick={() => setAddOpen(true)}
-          className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center shadow-sm active:scale-95 transition-transform">
-          <Plus size={20} className="text-white" />
-        </button>
+    <div style={{ padding: '20px 24px 8px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)', letterSpacing: -0.5 }}>Documents</h1>
+        <p style={{ fontSize: 14, color: 'var(--text2)', marginTop: 4 }}>Everything in one place</p>
       </div>
 
-      {/* Upload hint */}
+      {/* AI card */}
       <div
         onClick={() => setAddOpen(true)}
-        className="border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-2xl p-6 text-center cursor-pointer hover:border-primary-300 transition-colors"
+        style={{ background: '#111', borderRadius: 20, padding: 18, display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28, cursor: 'pointer' }}
       >
-        <Upload size={24} className="text-gray-300 dark:text-slate-600 mx-auto mb-2" />
-        <p className="text-sm font-medium text-gray-500">Add booking confirmation</p>
-        <p className="text-xs text-gray-400 mt-0.5">AI extracts flight numbers, dates & more</p>
+        <span style={{ fontSize: 34 }}>🤖</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 4 }}>AI Document Scan</div>
+          <div style={{ fontSize: 12, color: '#888', lineHeight: 1.5 }}>
+            Upload a booking confirmation — AI fills everything in automatically
+          </div>
+        </div>
+        <span style={{ fontSize: 22, color: '#fff', fontWeight: 300 }}>→</span>
       </div>
 
-      {/* Doc list */}
-      {docs.length === 0 ? (
-        <div className="card p-6 text-center">
-          <FileText size={24} className="text-gray-200 dark:text-slate-700 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">No documents yet</p>
-          <p className="text-xs text-gray-300 dark:text-slate-600 mt-0.5">Add your first booking confirmation</p>
+      {/* Doc groups */}
+      {grouped.length === 0 ? (
+        <div style={{ background: 'var(--card)', borderRadius: 20, padding: 24, textAlign: 'center', marginBottom: 24 }}>
+          <p style={{ fontSize: 14, color: 'var(--text3)' }}>No documents yet</p>
+          <p style={{ fontSize: 12, color: 'var(--text3)', marginTop: 4 }}>Add your first booking confirmation above</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {grouped.map(group => (
-            <div key={group.type}>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <group.icon size={11} /> {group.label}
-              </p>
-              <div className="space-y-2">
-                {group.docs.map(doc => (
-                  <motion.div key={doc.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                    className="card p-3 flex items-start gap-3">
-                    <DocIcon type={doc.type} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{doc.title}</p>
-                      {doc.extractedData && Object.keys(doc.extractedData).length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {Object.entries(doc.extractedData).slice(0, 3).map(([k, v]) => (
-                            <span key={k} className="text-[10px] bg-primary-50 dark:bg-primary-950 text-primary-600 px-1.5 py-0.5 rounded-full">
-                              {v}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      <p className="text-[10px] text-gray-400 mt-1">{new Date(doc.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+        grouped.map(group => (
+          <div key={group.type} style={{ marginBottom: 16 }}>
+            <div className="section-label">{group.label.toUpperCase()}</div>
+            {group.docs.map(doc => (
+              <motion.div key={doc.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 22, width: 30, textAlign: 'center' }}>{DOC_EMOJIS[doc.type]}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {doc.title}
+                  </div>
+                  {doc.extractedData && Object.keys(doc.extractedData).length > 0 ? (
+                    <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>
+                      {Object.values(doc.extractedData).slice(0, 2).join(' · ')}
                     </div>
-                    {doc.parsedAt && <Sparkles size={13} className="text-primary-400 shrink-0 mt-0.5" />}
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+                  ) : (
+                    <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>
+                      {new Date(doc.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {doc.parsedAt && <Sparkles size={13} color="#34C759" />}
+                  <span style={{ padding: '4px 10px', borderRadius: 999, background: '#E8F9ED', color: '#34C759', fontSize: 11, fontWeight: 700 }}>
+                    Saved
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ))
       )}
+
+      {/* Insurance CTA */}
+      <div style={{ marginBottom: 24 }}>
+        <div className="section-label">INSURANCE</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+          <span style={{ fontSize: 22, width: 30, textAlign: 'center' }}>🛡️</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>Travel Insurance</div>
+            <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>Not added yet</div>
+          </div>
+          <span style={{ padding: '4px 10px', borderRadius: 999, background: '#FFEBEA', color: '#FF3B30', fontSize: 11, fontWeight: 700 }}>Required</span>
+        </div>
+        <a href="https://safetywing.com" target="_blank" rel="noopener noreferrer"
+          style={{ display: 'block', padding: '10px 0', fontSize: 13, color: '#007AFF', textDecoration: 'none' }}>
+          → Get SafetyWing — long-term travel
+        </a>
+      </div>
+
+      {/* eSIM section */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div className="section-label" style={{ margin: 0 }}>DATA — AIRALO eSIM</div>
+          <span style={{ fontSize: 12, color: 'var(--text3)' }}>Buy before you land</span>
+        </div>
+        {relevantEsim.map(esim => (
+          <a key={esim.country} href="https://www.airalo.com" target="_blank" rel="noopener noreferrer"
+            style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--card)', borderRadius: 16, padding: '14px 16px', marginBottom: 8, textDecoration: 'none' }}>
+            <span style={{ fontSize: 28 }}>{esim.flag}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{esim.country}</div>
+              <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{esim.price}</div>
+            </div>
+            <div style={{ padding: '6px 14px', borderRadius: 999, background: '#000', color: '#fff', fontSize: 12, fontWeight: 600 }}>
+              Get eSIM
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <div style={{ height: 32 }} />
+
+      {/* FAB */}
+      <button onClick={() => setAddOpen(true)}
+        style={{ position: 'fixed', bottom: 80, right: 24, width: 56, height: 56, borderRadius: '50%', background: '#000', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', zIndex: 30 }}>
+        <Plus size={24} color="#fff" />
+      </button>
 
       {/* Add doc sheet */}
       <AnimatePresence>
@@ -191,18 +219,26 @@ export default function DocsPage() {
               className="fixed inset-0 bg-black/40 z-40" onClick={() => !parsing && setAddOpen(false)} />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white dark:bg-slate-900 rounded-t-2xl shadow-2xl px-5 pb-8 pt-4">
-              <div className="flex justify-center mb-4">
-                <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-slate-700" />
+              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 rounded-t-[24px] shadow-2xl px-6 pb-8 pt-4"
+              style={{ background: 'var(--surface)' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                <div style={{ width: 40, height: 4, borderRadius: 999, background: 'var(--card-deep)' }} />
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4">Add document</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>Add document</h3>
+                <button onClick={() => !parsing && setAddOpen(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--card)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <X size={15} color="var(--text2)" />
+                </button>
+              </div>
 
-              <div className="flex gap-1.5 flex-wrap mb-4">
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
                 {DOC_TYPES.map(dt => (
                   <button key={dt.type} onClick={() => setDocType(dt.type)}
-                    className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all',
-                      docType === dt.type ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500')}>
-                    <dt.icon size={11} /> {dt.label}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                      background: docType === dt.type ? '#000' : 'var(--card)', color: docType === dt.type ? '#fff' : 'var(--text2)',
+                    }}>
+                    {dt.emoji} {dt.label}
                   </button>
                 ))}
               </div>
@@ -210,27 +246,27 @@ export default function DocsPage() {
               <input type="text" placeholder="Document title (e.g. KLM BKK-DPS)" value={title}
                 onChange={e => setTitle(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !parsing && handleAdd()}
-                className="input text-sm mb-3" autoFocus />
+                className="input" style={{ marginBottom: 12 }} autoFocus />
 
               <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
                 onChange={handleFileChange} />
               <button onClick={() => fileRef.current?.click()}
-                className={cn(
-                  'w-full flex items-center justify-center gap-2 py-2.5 border border-dashed rounded-xl text-xs transition-colors mb-3',
-                  fileName
-                    ? 'border-primary-300 text-primary-600 bg-primary-50 dark:bg-primary-950'
-                    : 'border-gray-200 dark:border-slate-700 text-gray-400 hover:border-primary-300'
-                )}>
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: '14px', borderRadius: 14, border: `2px dashed ${fileName ? '#34C759' : 'var(--border)'}`,
+                  background: fileName ? '#E8F9ED' : 'none', color: fileName ? '#34C759' : 'var(--text3)',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
+                }}>
                 <Upload size={14} />
                 {fileName || 'Attach file (optional) — AI will extract info'}
               </button>
 
-              <button onClick={handleAdd} disabled={!title.trim() || parsing}
-                className={cn('btn-primary w-full justify-center py-3.5', (!title.trim() || parsing) && 'opacity-60 cursor-not-allowed')}>
+              <button onClick={handleAdd} disabled={!title.trim() || parsing} className="btn-primary"
+                style={{ width: '100%', justifyContent: 'center', padding: 18, opacity: (!title.trim() || parsing) ? 0.4 : 1 }}>
                 {parsing ? (
-                  <span className="flex items-center gap-2"><Loader2 size={15} className="animate-spin" /> Parsing with AI…</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={15} className="animate-spin" /> Parsing with AI…</span>
                 ) : (
-                  <span className="flex items-center gap-2"><Sparkles size={15} /> Save &amp; parse</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Sparkles size={15} /> Save &amp; parse</span>
                 )}
               </button>
             </motion.div>

@@ -2,21 +2,29 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Filter, Lightbulb, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Lightbulb, Loader2 } from 'lucide-react'
 import { useTripStore } from '@/store/tripStore'
-import { HealthRing } from '@/components/HealthRing'
-import { CategoryBadge, CATEGORY_META } from '@/components/CategoryBadge'
+import { CATEGORY_META } from '@/components/CategoryBadge'
 import { AddExpenseSheet } from '@/components/AddExpenseSheet'
-import { calcHealthScore, formatEur, budgetStatus } from '@/lib/utils'
-import { cn } from '@/lib/utils'
+import { formatEur } from '@/lib/utils'
 import type { ExpenseCategory } from '@/types'
 
 const ALL_CATEGORIES = Object.keys(CATEGORY_META) as ExpenseCategory[]
+
+const CAT_COLORS: Record<string, string> = {
+  food:       '#FF9500',
+  transport:  '#007AFF',
+  stay:       '#AF52DE',
+  activities: '#FF2D55',
+  drinks:     '#FF9500',
+  other:      '#8E8E93',
+}
 
 export default function BudgetPage() {
   const { activeTrip, activeTripExpenses, totalSpent, removeExpense } = useTripStore()
   const [sheetOpen, setSheetOpen] = useState(false)
   const [filterCat, setFilterCat] = useState<ExpenseCategory | 'all'>('all')
+  const [tab, setTab] = useState<'today' | 'total'>('today')
   const [rescueTips, setRescueTips] = useState<string[]>([])
   const [rescueLoading, setRescueLoading] = useState(false)
   const [rescueOpen, setRescueOpen] = useState(false)
@@ -27,14 +35,34 @@ export default function BudgetPage() {
 
   if (!trip) {
     return (
-      <div className="min-h-[calc(100dvh-64px)] flex flex-col items-center justify-center px-6 text-center">
-        <div className="text-4xl mb-3">💸</div>
-        <p className="text-gray-500 text-sm">No active trip. <a href="/create-trip" className="text-primary-600 underline">Create one</a></p>
+      <div style={{ minHeight: 'calc(100dvh - 64px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>💸</div>
+        <p style={{ color: 'var(--text2)', fontSize: 14 }}>No active trip. <a href="/home" style={{ color: '#000', fontWeight: 700 }}>Create one</a></p>
       </div>
     )
   }
 
-  const health = calcHealthScore(trip, allExpenses, [])
+  const todayStr = new Date().toDateString()
+  const todayExpenses = allExpenses.filter(e => new Date(e.date).toDateString() === todayStr)
+  const todaySpent = todayExpenses.reduce((s, e) => s + e.amountEur, 0)
+  const activeStop = trip.stops.find(s => s.isActive) ?? trip.stops[0]
+  const dailyBudget = activeStop?.budgetPerDay ?? 50
+
+  const displayExpenses = tab === 'today' ? todayExpenses : allExpenses
+  const displaySpent = tab === 'today' ? todaySpent : spent
+  const displayBudget = tab === 'today' ? dailyBudget : trip.totalBudget
+  const displayLeft = displayBudget - displaySpent
+  const displayPct = displayBudget > 0 ? Math.min(100, (displaySpent / displayBudget) * 100) : 0
+  const barColor = displayPct > 90 ? '#FF3B30' : displayPct > 70 ? '#FF9500' : '#34C759'
+
+  const byCategory = ALL_CATEGORIES.map(cat => ({
+    cat,
+    total: displayExpenses.filter(e => e.category === cat).reduce((s, e) => s + e.amountEur, 0),
+    count: displayExpenses.filter(e => e.category === cat).length,
+  })).filter(c => c.total > 0).sort((a, b) => b.total - a.total)
+
+  const maxCatTotal = byCategory.length > 0 ? byCategory[0].total : 1
+  const filtered = filterCat === 'all' ? displayExpenses : displayExpenses.filter(e => e.category === filterCat)
 
   async function fetchRescueTips() {
     if (rescueTips.length > 0) { setRescueOpen(p => !p); return }
@@ -42,189 +70,185 @@ export default function BudgetPage() {
     const topCategories = ALL_CATEGORIES
       .map(cat => ({ category: cat, total: allExpenses.filter(e => e.category === cat).reduce((s, e) => s + e.amountEur, 0) }))
       .filter(c => c.total > 0).sort((a, b) => b.total - a.total).slice(0, 3)
-    const activeStop = trip?.stops.find(s => s.isActive) ?? trip?.stops[0]
     try {
       const res = await fetch('/api/budget-rescue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ totalBudget: trip?.totalBudget ?? 0, spent, daysRemaining: trip?.durationWeeks ? trip.durationWeeks * 7 : 30, topCategories, currentCity: activeStop?.city ?? 'current city', travelerType: 'backpacker' }),
+        body: JSON.stringify({ totalBudget: trip?.totalBudget ?? 0, spent, daysRemaining: 30, topCategories, currentCity: activeStop?.city ?? 'current city', travelerType: 'backpacker' }),
       })
       const data = await res.json()
       setRescueTips(data.tips ?? [])
     } catch { setRescueTips(['Track every expense to stay on budget.']) }
     setRescueLoading(false)
   }
-  const status = budgetStatus(trip.totalBudget > 0 ? Math.round((spent / trip.totalBudget) * 100) : 0)
-  const remaining = trip.totalBudget - spent
-  const pct = trip.totalBudget > 0 ? Math.min(100, (spent / trip.totalBudget) * 100) : 0
-
-  const byCategory = ALL_CATEGORIES.map(cat => ({
-    cat,
-    total: allExpenses.filter(e => e.category === cat).reduce((s, e) => s + e.amountEur, 0),
-    count: allExpenses.filter(e => e.category === cat).length,
-  })).filter(c => c.total > 0).sort((a, b) => b.total - a.total)
-
-  const filtered = filterCat === 'all' ? allExpenses : allExpenses.filter(e => e.category === filterCat)
-
-  const stopBreakdown = trip.stops.map(stop => ({
-    stop,
-    spent: allExpenses.filter(e => e.stopId === stop.id).reduce((s, e) => s + e.amountEur, 0),
-    budget: stop.budgetPerDay * stop.days,
-  }))
 
   return (
-    <div className="px-4 pt-5 pb-2 space-y-4">
-      <div className="flex items-center justify-between">
+    <div style={{ padding: '20px 24px 8px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <p className="text-xs text-gray-400 font-medium">Budget tracker</p>
-          <h1 className="font-bold text-xl text-gray-900 dark:text-white">{trip.emoji} {trip.name}</h1>
+          <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)', letterSpacing: -0.5 }}>Budget</h1>
+          <p style={{ fontSize: 14, color: 'var(--text2)', marginTop: 4 }}>
+            {activeStop?.city ?? trip.name} stop
+          </p>
         </div>
-        <HealthRing score={health.total} size={64} />
       </div>
 
-      <div className={cn('rounded-2xl p-5 text-white', status === 'danger' ? 'bg-red-500' : status === 'warning' ? 'bg-amber-500' : 'gradient-budget')}>
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <p className="text-white/70 text-xs mb-1">Remaining</p>
-            <p className="text-3xl font-bold">{formatEur(remaining)}</p>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+        {([['today', 'Today'], ['total', 'Total trip']] as const).map(([t, label]) => (
+          <button key={t} onClick={() => setTab(t)}
+            style={{
+              padding: '6px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700,
+              background: tab === t ? '#000' : 'var(--card)', color: tab === t ? '#fff' : 'var(--text2)',
+            }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Hero card */}
+      <div style={{ background: 'var(--card)', borderRadius: 20, padding: 20, marginBottom: 24 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 6 }}>
+          SPENT
+        </div>
+        <div style={{ fontSize: 48, fontWeight: 800, color: 'var(--text)', letterSpacing: -2.5, lineHeight: 1, marginBottom: 18 }}>
+          €{displaySpent.toFixed(2)}
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <div style={{ flex: 1, background: '#fff', borderRadius: 14, padding: '10px 14px', textAlign: 'center' }}>
+            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 4 }}>BUDGET</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)' }}>€{displayBudget}</div>
           </div>
-          <div className="text-right">
-            <p className="text-white/70 text-xs mb-1">Spent</p>
-            <p className="text-xl font-bold">{formatEur(spent)}</p>
+          <div style={{ flex: 1, background: '#fff', borderRadius: 14, padding: '10px 14px', textAlign: 'center' }}>
+            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 4 }}>LEFT</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: displayLeft >= 0 ? '#34C759' : '#FF3B30' }}>
+              {displayLeft >= 0 ? `€${displayLeft.toFixed(0)}` : `-€${Math.abs(displayLeft).toFixed(0)}`}
+            </div>
           </div>
         </div>
-        <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-          <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }}
-            className="h-full bg-white rounded-full" />
+        <div className="prog-track">
+          <motion.div className="prog-fill" initial={{ width: 0 }} animate={{ width: `${displayPct}%` }}
+            style={{ background: barColor }} transition={{ duration: 0.6 }} />
         </div>
-        <p className="text-white/70 text-xs mt-2 text-right">{pct.toFixed(0)}% of {formatEur(trip.totalBudget)}</p>
+        <div style={{ fontSize: 13, color: 'var(--text2)' }}>{displayPct.toFixed(0)}% used</div>
       </div>
 
       {/* Budget rescue */}
-      <button onClick={fetchRescueTips}
-        className="w-full flex items-center gap-3 card p-3.5 hover:shadow-card-hover transition-shadow active:scale-[0.99]">
-        <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950 flex items-center justify-center shrink-0">
-          {rescueLoading ? <Loader2 size={16} className="text-amber-500 animate-spin" /> : <Lightbulb size={16} className="text-amber-500" />}
+      <button onClick={fetchRescueTips} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: 'var(--card)', borderRadius: 16, padding: '14px 16px', border: 'none', cursor: 'pointer', marginBottom: 24 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFF4E5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {rescueLoading ? <Loader2 size={16} color="#FF9500" className="animate-spin" /> : <Lightbulb size={16} color="#FF9500" />}
         </div>
-        <p className="text-sm font-semibold text-gray-900 dark:text-white flex-1 text-left">Budget rescue tips</p>
-        <span className="text-xs text-gray-400">{rescueOpen ? '↑' : '↓'}</span>
+        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', flex: 1, textAlign: 'left' }}>Budget rescue tips</p>
+        <span style={{ fontSize: 12, color: 'var(--text3)' }}>{rescueOpen ? '↑' : '↓'}</span>
       </button>
       <AnimatePresence>
         {rescueOpen && rescueTips.length > 0 && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-            className="card p-4 space-y-2.5 overflow-hidden">
+            style={{ background: 'var(--card)', borderRadius: 16, padding: 16, overflow: 'hidden', marginTop: -20, marginBottom: 24 }}>
             {rescueTips.map((tip, i) => (
-              <div key={i} className="flex gap-2.5">
-                <span className="text-amber-400 shrink-0 mt-0.5">💡</span>
-                <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed">{tip}</p>
+              <div key={i} style={{ display: 'flex', gap: 10, marginBottom: i < rescueTips.length - 1 ? 10 : 0 }}>
+                <span style={{ flexShrink: 0 }}>💡</span>
+                <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.6 }}>{tip}</p>
               </div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* By category */}
       {byCategory.length > 0 && (
-        <div className="card p-4">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">By category</p>
-          <div className="space-y-2.5">
-            {byCategory.map(({ cat, total, count }) => {
-              const pctOfSpent = spent > 0 ? (total / spent) * 100 : 0
-              const barColor = cat === 'food' ? 'bg-orange-400' : cat === 'transport' ? 'bg-blue-400' : cat === 'stay' ? 'bg-purple-400' : cat === 'activities' ? 'bg-pink-400' : cat === 'drinks' ? 'bg-amber-400' : 'bg-gray-400'
-              return (
-                <div key={cat}>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <CategoryBadge category={cat} size="sm" showLabel />
-                      <span className="text-xs text-gray-400">{count}x</span>
-                    </div>
-                    <span className="text-xs font-bold text-gray-900 dark:text-white">{formatEur(total)}</span>
+        <>
+          <div className="section-label">BY CATEGORY</div>
+          {byCategory.map(({ cat, total }) => {
+            const meta = CATEGORY_META[cat]
+            const pct = (total / maxCatTotal) * 100
+            return (
+              <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+                <span style={{ fontSize: 22, width: 30 }}>{meta.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 14, color: 'var(--text)' }}>{meta.label}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{formatEur(total)}</span>
                   </div>
-                  <div className="h-1 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${pctOfSpent}%` }}
-                      transition={{ duration: 0.5 }} className={cn('h-full rounded-full', barColor)} />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {stopBreakdown.length > 1 && (
-        <div className="card p-4">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">By stop</p>
-          <div className="space-y-2">
-            {stopBreakdown.map(({ stop, spent: s, budget: b }) => (
-              <div key={stop.id} className="flex items-center gap-3">
-                <div className={cn('w-2 h-2 rounded-full shrink-0', stop.isActive ? 'bg-primary-500 animate-pulse' : 'bg-gray-300')} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs font-medium text-gray-700 dark:text-slate-300 truncate">{stop.city}</p>
-                    <p className="text-xs font-bold text-gray-900 dark:text-white shrink-0 ml-2">{formatEur(s)}<span className="text-gray-400 font-normal">/{formatEur(b)}</span></p>
-                  </div>
-                  <div className="h-1 bg-gray-100 dark:bg-slate-700 rounded-full mt-1 overflow-hidden">
-                    <div className={cn('h-full rounded-full', b > 0 && s / b > 1 ? 'bg-red-400' : 'bg-primary-400')}
-                      style={{ width: `${Math.min(100, b > 0 ? (s / b) * 100 : 0)}%` }} />
+                  <div style={{ height: 5, background: 'var(--card)', borderRadius: 999, overflow: 'hidden' }}>
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.5 }}
+                      style={{ height: '100%', background: CAT_COLORS[cat] ?? '#8E8E93', borderRadius: 999 }} />
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            )
+          })}
+        </>
       )}
 
-      <div>
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 mb-3">
-          <button onClick={() => setFilterCat('all')}
-            className={cn('shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all',
-              filterCat === 'all' ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500')}>
-            All ({allExpenses.length})
+      {/* Expense filter + list */}
+      <div style={{ marginTop: 24 }}>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 16 }} className="no-scrollbar">
+          <button onClick={() => setFilterCat('all')} style={{
+            flexShrink: 0, padding: '6px 14px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+            background: filterCat === 'all' ? '#000' : 'var(--card)', color: filterCat === 'all' ? '#fff' : 'var(--text2)',
+          }}>
+            All ({displayExpenses.length})
           </button>
-          {byCategory.map(({ cat, count }) => (
-            <button key={cat} onClick={() => setFilterCat(cat)}
-              className={cn('shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all',
-                filterCat === cat ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500')}>
-              {CATEGORY_META[cat].emoji} {count}
-            </button>
-          ))}
+          {byCategory.map(({ cat, count }) => {
+            const meta = CATEGORY_META[cat]
+            return (
+              <button key={cat} onClick={() => setFilterCat(cat)} style={{
+                flexShrink: 0, padding: '6px 12px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                background: filterCat === cat ? '#000' : 'var(--card)', color: filterCat === cat ? '#fff' : 'var(--text2)',
+              }}>
+                {meta.emoji} {count}
+              </button>
+            )
+          })}
         </div>
 
+        <div className="section-label">ALL EXPENSES</div>
+
         {filtered.length === 0 ? (
-          <div className="card p-6 text-center">
-            <Filter size={20} className="text-gray-200 mx-auto mb-2" />
-            <p className="text-sm text-gray-400">No expenses yet</p>
+          <div style={{ background: 'var(--card)', borderRadius: 20, padding: 24, textAlign: 'center' }}>
+            <p style={{ fontSize: 14, color: 'var(--text3)' }}>No expenses yet</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            <AnimatePresence>
-              {filtered.map(expense => (
+          <AnimatePresence>
+            {filtered.map(expense => {
+              const meta = CATEGORY_META[expense.category]
+              return (
                 <motion.div key={expense.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
-                  className="card px-4 py-3 flex items-center gap-3">
-                  <CategoryBadge category={expense.category} size="md" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{expense.label || expense.raw}</p>
-                    <p className="text-[10px] text-gray-400">
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+                    {meta.emoji}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {expense.label || expense.raw}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 1 }}>
                       {expense.currency !== 'EUR' ? `${expense.amount} ${expense.currency} · ` : ''}
                       {new Date(expense.date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
-                    </p>
+                    </div>
                   </div>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white shrink-0">{formatEur(expense.amountEur)}</p>
-                  <button onClick={() => removeExpense(expense.id)} className="text-gray-200 hover:text-red-400 transition-colors ml-1">
-                    <Trash2 size={14} />
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', flexShrink: 0 }}>
+                    {formatEur(expense.amountEur)}
+                  </div>
+                  <button onClick={() => removeExpense(expense.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, marginLeft: 4 }}>
+                    <Trash2 size={14} color="var(--text3)" />
                   </button>
                 </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+              )
+            })}
+          </AnimatePresence>
         )}
       </div>
 
-      <div className="fixed bottom-20 right-4 z-30">
-        <button onClick={() => setSheetOpen(true)}
-          className="w-14 h-14 rounded-full bg-primary-500 flex items-center justify-center shadow-elevated active:scale-95 transition-transform">
-          <Plus size={24} className="text-white" />
-        </button>
-      </div>
+      <div style={{ height: 32 }} />
+
+      {/* FAB */}
+      <button onClick={() => setSheetOpen(true)}
+        style={{ position: 'fixed', bottom: 80, right: 24, width: 56, height: 56, borderRadius: '50%', background: '#000', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', zIndex: 30 }}>
+        <Plus size={24} color="#fff" />
+      </button>
 
       <AddExpenseSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
     </div>
